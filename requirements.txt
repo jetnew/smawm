@@ -1,0 +1,4 @@
+gym==0.20.0
+numpy=1.21.2
+pettingzoo==1.11.2
+pillow==8.3.2
