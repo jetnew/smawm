@@ -1,5 +1,5 @@
 gym==0.20.0
-numpy=1.19.5
+numpy==1.19.5
 pettingzoo==1.11.2
 pillow==8.3.2
 torch==1.2.0
