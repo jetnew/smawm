@@ -35,13 +35,12 @@ def generate_data(episodes=1000, data_dir="datasets/mpe", agents=2, episode_leng
                 a_rollout.append(a_t)
                 a_t = []
             
-        print(f"End of episode {i}, {len(s_rollout) - 1} samples.")
+        print(f"End of episode {i}.")
         np.savez(join(data_dir, f'episode_{i}'),
                 observations=np.array(s_rollout)[:-1],
                 rewards=np.array(r_rollout)[:-1],
                 actions=np.array(a_rollout)[:-1],
                 dones=np.array(d_rollout)[:-1])
-        
     env.close()
 
-generate_data(episodes=1000, data_dir='datasets/mpe', agents=2, episode_length=100)
+generate_data(episodes=1000, data_dir='datasets/mpe', agents=2, episode_length=1000)

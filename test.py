@@ -24,6 +24,6 @@ for i in tqdm(range(episodes)):
         idx = agent_idx[agent]
         if idx != 0:
             r += reward
-    rewards.append(r/2)
+    rewards.append(r)
 
 print(f"Average reward of agents over {episodes} episodes: {sum(rewards)/episodes:.2f} +- {statistics.stdev(rewards):.2f}")
