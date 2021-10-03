@@ -183,7 +183,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
 
 
 ASIZE, RSIZE, LSIZE = 3, 30, 15
-display = True
+display = False
 
 # multiprocessing variables
 n_samples = 4
