@@ -271,7 +271,7 @@ if __name__ == "__main__":
 
     epoch = 0
     log_step = 3
-    target_return = 2500
+    target_return = 300
     while not es.stop():
         if cur_best is not None and - cur_best > target_return:
             print("Already better than target, breaking...")
