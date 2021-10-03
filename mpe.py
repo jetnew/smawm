@@ -4,7 +4,7 @@ import numpy as np
 from pettingzoo.mpe import simple_adversary_v2
 
 
-def generate_data(episodes=1000, data_dir="datasets/mpe", agents=2, episode_length=1000):
+def generate_data(episodes=1000, data_dir="datasets/mpe", agents=2, episode_length=100):
     assert exists(data_dir), f"{data_dir} does not exist. Create a new directory {data_dir}."
     env = simple_adversary_v2.env(N=agents, max_cycles=episode_length, continuous_actions=False)
     env.reset()
@@ -44,4 +44,4 @@ def generate_data(episodes=1000, data_dir="datasets/mpe", agents=2, episode_leng
         
     env.close()
 
-generate_data(episodes=1000, data_dir='datasets/mpe', agents=2, episode_length=1000)
+generate_data(episodes=1000, data_dir='datasets/mpe', agents=2, episode_length=100)

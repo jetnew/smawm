@@ -75,7 +75,7 @@ class RolloutGenerator(object):
                 ctrl_state['reward']))
             self.controller.load_state_dict(ctrl_state['state_dict'])
 
-        self.env = simple_adversary_v2.env(N=2, max_cycles=1000, continuous_actions=False)
+        self.env = simple_adversary_v2.env(N=2, max_cycles=100, continuous_actions=False)
         self.device = device
 
         self.time_limit = time_limit
@@ -135,7 +135,7 @@ class RolloutGenerator(object):
                 self.env.render()
             if idx != 0:
                 cumulative += reward
-            if done or i > self.time_limit:
+            if done:
                 return - cumulative
             i += 1
 
