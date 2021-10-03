@@ -1,0 +1,3 @@
+Loading VAE at epoch 1 with test loss 14.145967402496337
+Loading MDRNN at epoch 0 with test loss 0.9124666213989258
+Loading Controller with reward 946.5019053504147
