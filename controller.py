@@ -132,7 +132,7 @@ class RolloutGenerator(object):
             self.env.step(action)
 
             if render:
-                self.env.render()
+                self.env.render(mode='human')
             if idx != 0:
                 cumulative += reward
             if done:
@@ -152,7 +152,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     (s_id, params) and results are pushed as (s_id, result).  The same
     parameter can appear multiple times in p_queue, displaying the same id
     each time.
-    As soon as e_queue is non empty, the thread terminate.
+    As soon as e_queue  is non empty, the thread terminate.
     When multiple gpus are involved, the assigned gpu is determined by the
     process index p_index (gpu = p_index % n_gpus).
     :args p_queue: queue containing couples (s_id, parameters) to evaluate

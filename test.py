@@ -12,7 +12,7 @@ for i, agent in enumerate(env.agents):
     agent_idx[agent] = i
     
 rewards = []
-episodes = 1000
+episodes = 10000
 for i in tqdm(range(episodes)):
     env.reset()
     r = 0
