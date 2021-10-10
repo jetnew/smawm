@@ -7,6 +7,15 @@ import torch
 import torch.utils.data
 import numpy as np
 
+
+def to_one_hot(indices, max_index):
+    """Get one-hot encoding of index tensors."""
+    zeros = torch.zeros(
+        indices.size()[0], max_index, dtype=torch.float32,
+        device=indices.device)
+    indices = indices.long() + torch.arange(0, max_index, action_dim, dtype=torch.long, device=indices.device)
+    return zeros.scatter_(1, indices, 1)
+
 class _RolloutDataset(torch.utils.data.Dataset):
     def __init__(self, root, buffer_size=200, train=True):
         self._files = [
@@ -98,6 +107,7 @@ class RolloutSequenceDataset(_RolloutDataset):
         obs_data = obs_data.astype(np.float32)
         obs, next_obs = obs_data[:-1], obs_data[1:]
         action = data['actions'][seq_index+1:seq_index + self._seq_len + 1]
+        action = to_one_hot(action, 15)
         action = action.astype(np.float32)
         reward, done = [data[key][seq_index+1:
                                       seq_index + self._seq_len + 1].astype(np.float32)
