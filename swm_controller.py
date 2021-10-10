@@ -16,13 +16,14 @@ from mdrnn import MDRNNCell
 import gym
 from pettingzoo.mpe import simple_adversary_v2
 import random
+import swm
 
 
 class Controller(nn.Module):
     """ Controller """
-    def __init__(self, latents, recurrents, actions):
+    def __init__(self, latents, actions):
         super().__init__()
-        self.fc = nn.Linear(latents + recurrents, actions)
+        self.fc = nn.Linear(latents, actions)
 
     def forward(self, *inputs):
         cat_in = torch.cat(inputs, dim=1)
@@ -55,7 +56,7 @@ class RolloutGenerator(object):
         ignore_action = False
         copy_action = False
         use_encoder = 'small'
-        model = modules.ContrastiveSWM(
+        model = swm.ContrastiveSWM(
             embedding_dim=embedding_dim,
             hidden_dim=hidden_dim,
             action_dim=action_dim,
@@ -87,21 +88,19 @@ class RolloutGenerator(object):
 
         self.time_limit = time_limit
 
-    def get_action_and_transition(self, obs, hidden):
+    def get_action_and_transition(self, obs):
         """ Get action and transition.
-        Encode obs to latent using the VAE, then obtain estimation for next
-        latent and next hidden state using the MDRNN and compute the controller
+        Encode obs to latent using the SWM and compute the controller 
         corresponding action.
         :args obs: current observation (1 x 3 x 64 x 64) torch tensor
-        :args hidden: current hidden state (1 x 256) torch tensor
-        :returns: (action, next_hidden)
+        :returns: (action)
             - action: 1D np array
-            - next_hidden (1 x 256) torch tensor
         """
-        _, latent_mu, _ = self.vae(obs)
-        action = self.controller(latent_mu, hidden[0])
-        _, _, _, _, _, next_hidden = self.mdrnn(action, latent_mu, hidden)
-        return action.squeeze().cpu().numpy(), next_hidden
+        state = self.model.forward(obs)
+        action = self.controller(state)
+
+        self.model(obs)
+        return action.squeeze().cpu().numpy()
 
     def rollout(self, params, render=False):
         """ Execute a rollout and returns minus cumulative reward.
@@ -120,10 +119,6 @@ class RolloutGenerator(object):
         for i, agent in enumerate(self.env.agents):
             agent_idx[agent] = i
 
-        hidden = [
-            torch.zeros(1, RSIZE).to(self.device)
-            for _ in range(2)]
-
         cumulative = 0
         i = 0
         for agent in self.env.agent_iter():
@@ -131,7 +126,7 @@ class RolloutGenerator(object):
             idx = agent_idx[agent]
             if idx != 0:
                 obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
-                action, hidden = self.get_action_and_transition(obs, hidden)
+                action = self.get_action_and_transition(obs)
                 action = min(max(round(action[0]), 0), 4)
             else:
                 action = random.randint(0,4) if not done else None
