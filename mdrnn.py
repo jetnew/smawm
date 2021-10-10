@@ -151,7 +151,6 @@ class MDRNNCell(_MDRNNBase):
         logpi = f.log_softmax(pi, dim=-1)
 
         r = out_full[:, -2]
-
         d = out_full[:, -1]
 
         return mus, sigmas, logpi, r, d, next_hidden
@@ -171,7 +170,7 @@ if __name__ == "__main__":
 
 
     LSIZE = 15
-    ASIZE = 3
+    ASIZE = 3  # TODO: Replace 3 agents' actions with 15D of 3 agents * 5 one-hot vector
     RSIZE = 30
     rnn_dir = join(getcwd(), logdir, 'mdrnn')
     rnn_file = join(rnn_dir, 'best.tar')
