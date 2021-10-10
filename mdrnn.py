@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 
     LSIZE = 15
-    ASIZE = 3  # TODO: Replace 3 agents' actions with 15D of 3 agents * 5 one-hot vector
+    ASIZE = 15  # 3 agents with 5D one-hot actions
     RSIZE = 30
     rnn_dir = join(getcwd(), logdir, 'mdrnn')
     rnn_file = join(rnn_dir, 'best.tar')
