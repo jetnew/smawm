@@ -10,11 +10,12 @@ import numpy as np
 
 def to_one_hot(indices, max_index):
     """Get one-hot encoding of index tensors."""
-    zeros = torch.zeros(
-        indices.size()[0], max_index, dtype=torch.float32,
-        device=indices.device)
-    indices = indices.long() + torch.arange(0, max_index, action_dim, dtype=torch.long, device=indices.device)
-    return zeros.scatter_(1, indices, 1)
+    # TODO: NEED TO CONVERT TO NUMPY
+    indices = torch.from_numpy(indices.astype(np.float32))
+    zeros = torch.zeros(indices.size()[0], max_index, dtype=torch.float32)
+    indices = indices.long() + torch.arange(0, max_index, 5, dtype=torch.long)
+    return zeros.scatter_(1, indices, 1).numpy()
+    
 
 class _RolloutDataset(torch.utils.data.Dataset):
     def __init__(self, root, buffer_size=200, train=True):

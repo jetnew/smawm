@@ -35,4 +35,4 @@ for i in tqdm(range(episodes)):
         replay_buffer[i]['action'].append(dataset['actions'][j])
         replay_buffer[i]['next_obs'].append(dataset['observations'][j + 1])
 
-save_list_dict_h5py(replay_buffer, "datasets/mpe/episodes.h5")
+save_list_dict_h5py(replay_buffer, "datasets/mpe-episodes.h5")

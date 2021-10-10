@@ -163,7 +163,7 @@ if __name__ == "__main__":
     logdir = 'exp_dir'
     vae_file = join(getcwd(), logdir, 'vae', 'best.tar')
     assert exists(vae_file), "No trained VAE in the logdir..."
-    state = torch.load(vae_file)
+    state = torch.load(vae_file, map_location=torch.device('cpu'))
     print(f"Loading VAE at epoch {state['epoch']} with test error {state['precision']}")
     vae = VAE(10, 15).to(device)
     vae.load_state_dict(state['state_dict'])
