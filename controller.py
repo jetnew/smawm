@@ -121,7 +121,7 @@ class RolloutGenerator(object):
                 action = random.randint(0,4) if not done else None
             
             self.env.step(action)
-            actions.append(torch.eye(5)[action])
+            actions.append(torch.eye(5, device=obs.device)[action])
             
             # At the end of all agents, at the last agent's turn, update the MDRNN's hidden state.
             if idx == self.env.max_num_agents - 1:
