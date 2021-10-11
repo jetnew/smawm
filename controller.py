@@ -23,7 +23,7 @@ class Controller(nn.Module):
     def __init__(self, latents, recurrents, actions):
         super().__init__()
         self.fc = nn.Linear(latents + recurrents, actions)
-        self.act = nn.Softmax()
+        self.act = nn.Softmax(dim=1)
 
     def forward(self, *inputs):
         cat_in = torch.cat(inputs, dim=1)
@@ -105,7 +105,6 @@ class RolloutGenerator(object):
         actions = []
         cumulative = 0
         i = 0
-        print("Running")
         for agent in self.env.agent_iter():
             observation, reward, done, info = self.env.last()
             idx = agent_idx[agent]
@@ -114,17 +113,19 @@ class RolloutGenerator(object):
             if idx != 0:
                 obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
                 _, latent_mu, _ = self.vae(obs)
-                action = torch.argmax(self.controller(latent_mu, hidden[0]))
+                action = self.controller(latent_mu, hidden[0])
+                action = torch.argmax(action).item()
             
             # Take random actions as the adversary.
             else:
                 action = random.randint(0,4) if not done else None
-                
+            
             self.env.step(action)
-            actions.append(action)
+            actions.append(torch.eye(5)[action])
             
             # At the end of all agents, at the last agent's turn, update the MDRNN's hidden state.
             if idx == self.env.max_num_agents - 1:
+                actions = torch.cat(actions, 0).unsqueeze(0)
                 _, _, _, _, _, hidden = self.mdrnn(actions, latent_mu, hidden)
                 actions = []
 
@@ -157,7 +158,6 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     :args e_queue: as soon as not empty, terminate
     :args p_index: the process index
     """
-    print("Start slave routine")
     # init routine
     if torch.cuda.is_available():
         gpu = p_index % torch.cuda.device_count()
@@ -169,7 +169,6 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     sys.stdout = open(join(tmp_dir, str(getpid()) + '.out'), 'a')
     sys.stderr = open(join(tmp_dir, str(getpid()) + '.err'), 'a')
 
-    print("Start RolloutGenerator")
     with torch.no_grad():
         r_gen = RolloutGenerator(logdir, device, time_limit)
 
@@ -216,10 +215,8 @@ if __name__ == "__main__":
     r_queue = Queue()
     e_queue = Queue()
 
-    print("Start Processes")
     for p_index in range(num_workers):
         Process(target=slave_routine, args=(p_queue, r_queue, e_queue, p_index)).start()
-        
         
         
     ################################################################################
@@ -240,7 +237,6 @@ if __name__ == "__main__":
         for s_id in range(rollouts):
             p_queue.put((s_id, best_guess))
 
-        print("Evaluating...")
         for _ in tqdm(range(rollouts)):
             while r_queue.empty():
                 sleep(.1)
@@ -286,7 +282,6 @@ if __name__ == "__main__":
                 p_queue.put((s_id, s))
 
         # retrieve results
-        print("Retrieving results")
         if display:
             pbar = tqdm(total=pop_size * n_samples)
         for _ in range(pop_size * n_samples):
