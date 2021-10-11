@@ -10,7 +10,6 @@ import numpy as np
 
 def to_one_hot(indices, max_index):
     """Get one-hot encoding of index tensors."""
-    # TODO: NEED TO CONVERT TO NUMPY
     indices = torch.from_numpy(indices.astype(np.float32))
     zeros = torch.zeros(indices.size()[0], max_index, dtype=torch.float32)
     indices = indices.long() + torch.arange(0, max_index, 5, dtype=torch.long)

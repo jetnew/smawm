@@ -482,7 +482,7 @@ if __name__ == "__main__":
 
     device = torch.device('cuda' if cuda else 'cpu')
 
-    dataset = "datasets/mpe/episodes.h5"
+    dataset = "datasets/mpe-episodes.h5"
     batch_size = 32
     dataset = StateTransitionsDataset(
         hdf5_file=dataset)
@@ -491,7 +491,7 @@ if __name__ == "__main__":
     
     input_shape = 10
     embedding_dim = 2
-    hidden_dim = 512
+    hidden_dim = 64
     action_dim = 5
     num_objects = 3
     sigma = 0.5

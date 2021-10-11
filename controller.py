@@ -23,10 +23,11 @@ class Controller(nn.Module):
     def __init__(self, latents, recurrents, actions):
         super().__init__()
         self.fc = nn.Linear(latents + recurrents, actions)
+        self.act = nn.Softmax()
 
     def forward(self, *inputs):
         cat_in = torch.cat(inputs, dim=1)
-        return self.fc(cat_in)
+        return self.act(self.fc(cat_in))
         
         
 class RolloutGenerator(object):
@@ -66,7 +67,7 @@ class RolloutGenerator(object):
         self.mdrnn.load_state_dict(
             {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
 
-        self.controller = Controller(LSIZE, RSIZE, 3).to(device)  # TODO: Replace to 1!
+        self.controller = Controller(LSIZE, RSIZE, 5).to(device)
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -79,22 +80,6 @@ class RolloutGenerator(object):
         self.device = device
 
         self.time_limit = time_limit
-
-    def get_action_and_transition(self, obs, hidden):
-        """ Get action and transition.
-        Encode obs to latent using the VAE, then obtain estimation for next
-        latent and next hidden state using the MDRNN and compute the controller
-        corresponding action.
-        :args obs: current observation (1 x 3 x 64 x 64) torch tensor
-        :args hidden: current hidden state (1 x 256) torch tensor
-        :returns: (action, next_hidden)
-            - action: 1D np array
-            - next_hidden (1 x 256) torch tensor
-        """
-        _, latent_mu, _ = self.vae(obs)
-        action = self.controller(latent_mu, hidden[0])
-        _, _, _, _, _, next_hidden = self.mdrnn(action, latent_mu, hidden)
-        return action.squeeze().cpu().numpy(), next_hidden
 
     def rollout(self, params, render=False):
         """ Execute a rollout and returns minus cumulative reward.
@@ -116,20 +101,31 @@ class RolloutGenerator(object):
         hidden = [
             torch.zeros(1, RSIZE).to(self.device)
             for _ in range(2)]
-
+        
+        actions = []
         cumulative = 0
         i = 0
         for agent in self.env.agent_iter():
             observation, reward, done, info = self.env.last()
             idx = agent_idx[agent]
+            
+            # If the agent is not the adversary, apply the trained policy.
             if idx != 0:
                 obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
-                action, hidden = self.get_action_and_transition(obs, hidden)
-                action = min(max(round(action[0]), 0), 4)
+                _, latent_mu, _ = self.vae(obs)
+                action = np.argmax(self.controller(latent_mu, hidden[0]))
+            
+            # Take random actions as the adversary.
             else:
                 action = random.randint(0,4) if not done else None
-            
+                
             self.env.step(action)
+            actions.append(action)
+            
+            # At the end of all agents, at the last agent's turn, update the MDRNN's hidden state.
+            if idx == env.max_num_agents - 1:
+                _, _, _, _, _, hidden = self.mdrnn(actions, latent_mu, hidden)
+                actions = []
 
             if render:
                 self.env.render(mode='human')
@@ -182,7 +178,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
                 r_queue.put((s_id, r_gen.rollout(params)))
 
 
-ASIZE, RSIZE, LSIZE = 3, 30, 15
+ASIZE, RSIZE, LSIZE = 15, 30, 15
 display = False
 
 # multiprocessing variables
@@ -253,7 +249,7 @@ if __name__ == "__main__":
     ################################################################################
     #                           Launch CMA                                         #
     ################################################################################
-    controller = Controller(LSIZE, RSIZE, ASIZE)  # dummy instance
+    controller = Controller(LSIZE, RSIZE, 5)  # dummy instance
 
     # define current best and load parameters
     cur_best = None
