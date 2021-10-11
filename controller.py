@@ -105,6 +105,7 @@ class RolloutGenerator(object):
         actions = []
         cumulative = 0
         i = 0
+        print("Running")
         for agent in self.env.agent_iter():
             observation, reward, done, info = self.env.last()
             idx = agent_idx[agent]
