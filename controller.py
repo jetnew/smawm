@@ -114,7 +114,7 @@ class RolloutGenerator(object):
             if idx != 0:
                 obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
                 _, latent_mu, _ = self.vae(obs)
-                action = np.argmax(self.controller(latent_mu, hidden[0]))
+                action = torch.argmax(self.controller(latent_mu, hidden[0]))
             
             # Take random actions as the adversary.
             else:
@@ -124,7 +124,7 @@ class RolloutGenerator(object):
             actions.append(action)
             
             # At the end of all agents, at the last agent's turn, update the MDRNN's hidden state.
-            if idx == env.max_num_agents - 1:
+            if idx == self.env.max_num_agents - 1:
                 _, _, _, _, _, hidden = self.mdrnn(actions, latent_mu, hidden)
                 actions = []
 
@@ -157,6 +157,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     :args e_queue: as soon as not empty, terminate
     :args p_index: the process index
     """
+    print("Start slave routine")
     # init routine
     if torch.cuda.is_available():
         gpu = p_index % torch.cuda.device_count()
@@ -168,6 +169,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     sys.stdout = open(join(tmp_dir, str(getpid()) + '.out'), 'a')
     sys.stderr = open(join(tmp_dir, str(getpid()) + '.err'), 'a')
 
+    print("Start RolloutGenerator")
     with torch.no_grad():
         r_gen = RolloutGenerator(logdir, device, time_limit)
 
@@ -214,6 +216,7 @@ if __name__ == "__main__":
     r_queue = Queue()
     e_queue = Queue()
 
+    print("Start Processes")
     for p_index in range(num_workers):
         Process(target=slave_routine, args=(p_queue, r_queue, e_queue, p_index)).start()
         
@@ -283,6 +286,7 @@ if __name__ == "__main__":
                 p_queue.put((s_id, s))
 
         # retrieve results
+        print("Retrieving results")
         if display:
             pbar = tqdm(total=pop_size * n_samples)
         for _ in range(pop_size * n_samples):

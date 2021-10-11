@@ -1,0 +1,4 @@
+Start RolloutGenerator
+Loading VAE at epoch 3 with test loss 13.557600266113282
+Loading MDRNN at epoch 2 with test loss 0.8344544449128395
+Running
