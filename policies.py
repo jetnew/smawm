@@ -70,66 +70,67 @@ def follow_agent_closest_to_landmark_policy(obs, eps=0.5):
         return follow(obs, obj=0)
     else:
         return follow(obs, obj=1)
-
-
-env = simple_adversary_v2.env(N=2, max_cycles=100, continuous_actions=False)
-env.reset()
-
-agent_idx = {}
-for i, agent in enumerate(env.agents):
-    agent_idx[agent] = i
-
-episodes = 1000
-
-agent1_rewards = []
-agent2_rewards = []
-adversary_rewards = []
-
-for i in tqdm(range(episodes)):
-    env.reset()
-    agent1_reward = 0
-    agent2_reward = 0
-    adversary_reward = 0
-    
-    for agent in env.agent_iter():
-        idx = agent_idx[agent]
         
-        obs, reward, done, info = env.last()
-
-        if idx == 0:
-            # action = static_policy()
-            # action = follow(obs, obj=3)
-            action = follow_agent_closest_to_landmark_policy(obs, eps=0)
-            
-        elif idx == 1:
-            #action = static_policy()
-            action = follow(obs, obj=0, eps=0.3)
-        else:
-            #action = random_policy()
-            action = follow(obs, obj=2, eps=0.1)
-        
-        env.step(action)
-        
-        if idx == 0:
-            adversary_reward += reward
-        elif idx == 1:
-            agent1_reward += reward
-        elif idx == 2:
-            agent2_reward += reward
-        
-        # env.render()
-    
-    agent1_rewards.append(agent1_reward)
-    agent2_rewards.append(agent2_reward)
-    adversary_rewards.append(adversary_reward)
-        
-
 def compute_reward(rewards):
-    return sum(rewards) / episodes, statistics.stdev(rewards)
+        return sum(rewards) / episodes, statistics.stdev(rewards)
 
-a1_mean, a1_std = compute_reward(agent1_rewards)
-a2_mean, a2_std = compute_reward(agent2_rewards)
-ad_mean, ad_std = compute_reward(adversary_rewards)
-print(f"Agent 1: {a1_mean:.3f} +- {a1_std:.3f}")
-print(f"Agent 2: {a2_mean:.3f} +- {a2_std:.3f}")
-print(f"Adversary: {ad_mean:.3f} +- {ad_std:.3f}")
+
+if __name__ == "__main__":
+    env = simple_adversary_v2.env(N=2, max_cycles=100, continuous_actions=False)
+    env.reset()
+
+    agent_idx = {}
+    for i, agent in enumerate(env.agents):
+        agent_idx[agent] = i
+
+    episodes = 1000
+
+    agent1_rewards = []
+    agent2_rewards = []
+    adversary_rewards = []
+
+    for i in tqdm(range(episodes)):
+        env.reset()
+        agent1_reward = 0
+        agent2_reward = 0
+        adversary_reward = 0
+        
+        for agent in env.agent_iter():
+            idx = agent_idx[agent]
+            
+            obs, reward, done, info = env.last()
+
+            if idx == 0:
+                # action = static_policy()
+                # action = follow(obs, obj=3)
+                action = follow_agent_closest_to_landmark_policy(obs, eps=0)
+                
+            elif idx == 1:
+                #action = static_policy()
+                action = follow(obs, obj=0, eps=0.3)
+            else:
+                #action = random_policy()
+                action = follow(obs, obj=2, eps=0.1)
+            
+            env.step(action)
+            
+            if idx == 0:
+                adversary_reward += reward
+            elif idx == 1:
+                agent1_reward += reward
+            elif idx == 2:
+                agent2_reward += reward
+            
+            # env.render()
+        
+        agent1_rewards.append(agent1_reward)
+        agent2_rewards.append(agent2_reward)
+        adversary_rewards.append(adversary_reward)
+            
+
+    a1_mean, a1_std = compute_reward(agent1_rewards)
+    a2_mean, a2_std = compute_reward(agent2_rewards)
+    ad_mean, ad_std = compute_reward(adversary_rewards)
+    print(f"Agent 1: {a1_mean:.3f} +- {a1_std:.3f}")
+    print(f"Agent 2: {a2_mean:.3f} +- {a2_std:.3f}")
+    print(f"Adversary: {ad_mean:.3f} +- {ad_std:.3f}")

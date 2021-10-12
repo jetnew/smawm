@@ -16,6 +16,7 @@ from mdrnn import MDRNNCell
 import gym
 from pettingzoo.mpe import simple_adversary_v2
 import random
+from policies import follow_agent_closest_to_landmark_policy
 
 
 class Controller(nn.Module):
@@ -116,7 +117,8 @@ class RolloutGenerator(object):
             
             # Take random actions as the adversary.
             else:
-                action = random.randint(0,4) if not done else None
+                action = follow_agent_closest_to_landmark_policy(obs, eps=0.5)
+                #action = random.randint(0,4) if not done else None
             
             self.env.step(action)
             actions.append(torch.eye(5, device=self.device)[action])
