@@ -18,7 +18,7 @@ python wm.py
 
 ## Train SWM
 ```
-python mpe.py
+python mpe_swm.py
 python swm.py
 python controller.py
 python wm.py

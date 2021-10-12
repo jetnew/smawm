@@ -48,16 +48,16 @@ def distance(obs, obj1, obj2):
     return euclidean(obs[obj1*2], obs[obj1*2+1], obs[obj2*2], obs[obj2*2+1])
     
 def static_policy():
-    return 0 if not done else None
+    return 0
     
 def random_policy():
-    return random.randint(0, 4) if not done else None
+    return random.randint(0, 4)
     
 def follow(obs, obj=3, eps=0.5):
     # obj refers to the object in the observation space
     if random.random() < eps:
         return random_policy()
-    return move_towards(obs[obj*2], obs[obj*2+1]) if not done else None
+    return move_towards(obs[obj*2], obs[obj*2+1])
     
 def follow_agent_closest_to_landmark_policy(obs, eps=0.5):
     if random.random() < eps:
@@ -101,16 +101,16 @@ if __name__ == "__main__":
             obs, reward, done, info = env.last()
 
             if idx == 0:
-                # action = static_policy()
-                # action = follow(obs, obj=3)
-                action = follow_agent_closest_to_landmark_policy(obs, eps=0)
+                # action = static_policy() if not done else None
+                # action = follow(obs, obj=3) if not done else None
+                action = follow_agent_closest_to_landmark_policy(obs, eps=0) if not done else None
                 
             elif idx == 1:
-                #action = static_policy()
-                action = follow(obs, obj=0, eps=0.3)
+                #action = static_policy() if not done else None
+                action = follow(obs, obj=0, eps=0.3) if not done else None
             else:
-                #action = random_policy()
-                action = follow(obs, obj=2, eps=0.1)
+                #action = random_policy() if not done else None
+                action = follow(obs, obj=2, eps=0.1) if not done else None
             
             env.step(action)
             
