@@ -43,4 +43,4 @@ def generate_data(episodes=1000, data_dir="datasets/mpe", agents=2, episode_leng
                 dones=np.array(d_rollout)[:-1])
     env.close()
 
-generate_data(episodes=1000, data_dir='datasets/mpe', agents=2, episode_length=100)
+generate_data(episodes=1000, data_dir='datasets/mpe', agents=2, episode_length=1000)
