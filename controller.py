@@ -76,10 +76,8 @@ class RolloutGenerator(object):
                 ctrl_state['reward']))
             self.controller.load_state_dict(ctrl_state['state_dict'])
 
-        self.env = simple_adversary_v2.env(N=2, max_cycles=100, continuous_actions=False)
+        self.env = simple_adversary_v2.env(N=2, max_cycles=time_limit, continuous_actions=False)
         self.device = device
-
-        self.time_limit = time_limit
 
     def rollout(self, params, render=False):
         """ Execute a rollout and returns minus cumulative reward.
@@ -187,7 +185,7 @@ display = False
 n_samples = 4
 pop_size = 4
 num_workers = min(32, n_samples * pop_size)
-time_limit = 1000
+time_limit = 100
 
 # create tmp dir if non existent and clean it if existent
 logdir = 'exp_dir'
