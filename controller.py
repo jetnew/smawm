@@ -69,7 +69,7 @@ class RolloutGenerator(object):
         self.mdrnn.load_state_dict(
             {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
 
-        self.controller = Controller(LSIZE, RSIZE, 5).to(device)
+        self.controller = Controller(LSIZE, RSIZE, 4).to(device)
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -116,7 +116,7 @@ class RolloutGenerator(object):
                 _, latent_mu, _ = self.vae(obs)
                 action = self.controller(latent_mu, hidden[0])
                 #print(action)
-                action = torch.argmax(action).item()
+                action = torch.argmax(action).item() + 1
             
             # Take random actions as the adversary.
             else:
@@ -308,7 +308,7 @@ if __name__ == "__main__":
             print("Current evaluation: {}".format(best))
             if not cur_best or cur_best > best:
                 cur_best = best
-                print("Saving new best with value {}+-{}...".format(-cur_best, std_best))
+                print("Saving new best with value {:.3f}+-{:.3f}...".format(-cur_best, std_best))
                 load_parameters(best_params, controller)
                 torch.save(
                     {'epoch': epoch,
