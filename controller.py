@@ -23,13 +23,14 @@ class Controller(nn.Module):
     """ Controller """
     def __init__(self, latents, recurrents, actions):
         super().__init__()
-        self.fc = nn.Linear(latents + recurrents, latents + recurrents)
-        self.fc2 = nn.Linear(latents + recurrents, actions)        
+        self.fc = nn.Linear(latents + recurrents, actions)
+        #self.fc2 = nn.Linear(latents + recurrents, actions)        
         self.act = nn.Softmax(dim=1)
 
     def forward(self, *inputs):
-        cat_in = torch.cat(inputs, dim=1)
-        return self.act(self.fc2(nn.ReLU()(self.fc(cat_in))))
+        x = torch.cat(inputs, dim=1)
+        #x = nn.ReLU()(self.fc(x))
+        return self.act(self.fc(x))
         
         
 class RolloutGenerator(object):
@@ -139,9 +140,6 @@ class RolloutGenerator(object):
             if idx == 0:
                 adversary += reward
             if done:
-                print("i:", i)
-                print("cumulative:", cumulative)
-                print("adversary:", adversary)
                 return - cumulative
             i += 1
 
@@ -270,7 +268,7 @@ if __name__ == "__main__":
         print("Previous best was {}...".format(-cur_best))
 
     parameters = controller.parameters()
-    es = cma.CMAEvolutionStrategy(flatten_parameters(parameters), 0.1,
+    es = cma.CMAEvolutionStrategy(flatten_parameters(parameters), 0.5,
                                   {'popsize': pop_size})
 
     epoch = 0
