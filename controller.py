@@ -104,6 +104,7 @@ class RolloutGenerator(object):
         
         actions = []
         cumulative = 0
+        adversary = 0
         i = 0
         for agent in self.env.agent_iter():
             observation, reward, done, info = self.env.last()
@@ -135,7 +136,11 @@ class RolloutGenerator(object):
                 self.env.render(mode='human')
             if idx == self.env.max_num_agents - 1:
                 cumulative += reward
+            if idx == 0:
+                adversary += reward
             if done:
+                print("cumulative:", cumulative)
+                print("adversary:", adversary)
                 return - cumulative
             i += 1
 
