@@ -139,8 +139,6 @@ class RolloutGenerator(object):
             if idx == 0:
                 adversary += reward
             if done:
-                print("cumulative:", cumulative)
-                print("adversary:", adversary)
                 return - cumulative
             i += 1
 
@@ -229,7 +227,7 @@ if __name__ == "__main__":
     ################################################################################
     #                           Evaluation                                         #
     ################################################################################
-    def evaluate(solutions, results, rollouts=100):
+    def evaluate(solutions, results, rollouts=1000):
         """ Give current controller evaluation.
         Evaluation is minus the cumulated reward averaged over rollout runs.
         :args solutions: CMA set of solutions
@@ -269,7 +267,7 @@ if __name__ == "__main__":
         print("Previous best was {}...".format(-cur_best))
 
     parameters = controller.parameters()
-    es = cma.CMAEvolutionStrategy(flatten_parameters(parameters), 0.5,
+    es = cma.CMAEvolutionStrategy(flatten_parameters(parameters), 0.1,
                                   {'popsize': pop_size})
 
     epoch = 0
