@@ -15,11 +15,11 @@ assert exists(ctrl_file),\
 
 device = torch.device('cpu')
 
-generator = RolloutGenerator(logdir, device, 1000)
+generator = RolloutGenerator(logdir, device, 100)
 
 with torch.no_grad():
     scores = []
-    trials = 1
+    trials = 10
     for _ in tqdm(range(trials)):
         score = -generator.rollout(None, render=True)
         scores.append(score)

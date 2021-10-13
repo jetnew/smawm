@@ -23,14 +23,17 @@ class Controller(nn.Module):
     """ Controller """
     def __init__(self, latents, recurrents, actions):
         super().__init__()
-        self.fc = nn.Linear(latents + recurrents, actions)
-        #self.fc2 = nn.Linear(latents + recurrents, actions)        
-        self.act = nn.Softmax(dim=1)
+        self.fc1 = nn.Linear(latents + recurrents, 32)
+        self.fc2 = nn.Linear(32, 32)
+        self.fc3 = nn.Linear(32, actions)        
+        self.act1 = nn.Sigmoid()
+        self.act2 = nn.Softmax(dim=1)
 
     def forward(self, *inputs):
         x = torch.cat(inputs, dim=1)
-        #x = nn.ReLU()(self.fc(x))
-        return self.act(self.fc(x))
+        x = self.act1(self.fc1(x))
+        x = self.act1(self.fc2(x))
+        return self.act2(self.fc3(x))
         
         
 class RolloutGenerator(object):
