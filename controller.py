@@ -127,14 +127,14 @@ class RolloutGenerator(object):
             actions.append(torch.eye(5, device=self.device)[action])
             
             # At the end of all agents, at the last agent's turn, update the MDRNN's hidden state.
-            if idx == self.env.max_num_agents - 1:
+            if idx == 2:
                 actions = torch.cat(actions, 0).unsqueeze(0)
                 _, _, _, _, _, hidden = self.mdrnn(actions, latent_mu, hidden)
                 actions = []
 
             if render:
                 self.env.render(mode='human')
-            if idx == self.env.max_num_agents - 1:
+            if idx == 2:
                 cumulative += reward
             if idx == 0:
                 adversary += reward
