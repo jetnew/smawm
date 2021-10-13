@@ -124,7 +124,7 @@ class RolloutGenerator(object):
             
             # Take random actions as the adversary.
             else:
-                action = follow_agent_closest_to_landmark_policy(observation, eps=0) if not done else None
+                action = follow_agent_closest_to_landmark_policy(observation, eps=0.5) if not done else None
                 #action = random.randint(0,4) if not done else None
             
             self.env.step(action)
