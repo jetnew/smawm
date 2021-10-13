@@ -264,7 +264,7 @@ if __name__ == "__main__":
         print("Previous best was {}...".format(-cur_best))
 
     parameters = controller.parameters()
-    es = cma.CMAEvolutionStrategy(flatten_parameters(parameters), 0.1,
+    es = cma.CMAEvolutionStrategy(flatten_parameters(parameters), 0.5,
                                   {'popsize': pop_size})
 
     epoch = 0
