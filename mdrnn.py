@@ -308,7 +308,7 @@ if __name__ == "__main__":
     test = partial(data_pass, train=False, include_reward=True)
 
     cur_best = None
-    epochs = 3
+    epochs = 10
     for e in range(epochs):
         train(e)
         test_loss = test(e)

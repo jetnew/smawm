@@ -185,8 +185,8 @@ ASIZE, RSIZE, LSIZE = 15, 30, 15
 display = False
 
 # multiprocessing variables
-n_samples = 2#4
-pop_size = 2#4
+n_samples = 4
+pop_size = 4
 num_workers = min(32, n_samples * pop_size)
 time_limit = 100
 
