@@ -113,6 +113,7 @@ class RolloutGenerator(object):
                 obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
                 _, latent_mu, _ = self.vae(obs)
                 action = self.controller(latent_mu, hidden[0])
+                #print(action)
                 action = torch.argmax(action).item()
             
             # Take random actions as the adversary.
@@ -131,7 +132,7 @@ class RolloutGenerator(object):
 
             if render:
                 self.env.render(mode='human')
-            if idx != 0:
+            if idx == self.env.max_num_agents - 1:
                 cumulative += reward
             if done:
                 return - cumulative
@@ -184,8 +185,8 @@ ASIZE, RSIZE, LSIZE = 15, 30, 15
 display = False
 
 # multiprocessing variables
-n_samples = 4
-pop_size = 4
+n_samples = 2#4
+pop_size = 2#4
 num_workers = min(32, n_samples * pop_size)
 time_limit = 100
 
@@ -267,7 +268,7 @@ if __name__ == "__main__":
 
     epoch = 0
     log_step = 3
-    target_return = 300
+    target_return = 70
     while not es.stop():
         if cur_best is not None and - cur_best > target_return:
             print("Already better than target, breaking...")
