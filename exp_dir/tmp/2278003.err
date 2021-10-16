@@ -1,4 +1,4 @@
-Process Process-12:
+Process Process-16:
 Traceback (most recent call last):
   File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 258, in _bootstrap
     self.run()
@@ -12,10 +12,4 @@ Traceback (most recent call last):
     observation = self.observe(agent) if observe else None
   File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/wrappers/order_enforcing.py", line 73, in observe
     return super().observe(agent)
-  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/wrappers/base.py", line 62, in observe
-    return self.env.observe(agent)
-  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/wrappers/base.py", line 62, in observe
-    return self.env.observe(agent)
-  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/mpe/_mpe_utils/simple_env.py", line 99, in observe
-    self.world.agents[self._index_map[agent]], self.world
 KeyboardInterrupt

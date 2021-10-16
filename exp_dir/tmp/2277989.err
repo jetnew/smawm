@@ -1,4 +1,4 @@
-Process Process-10:
+Process Process-2:
 Traceback (most recent call last):
   File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 258, in _bootstrap
     self.run()
@@ -6,6 +6,6 @@ Traceback (most recent call last):
     self._target(*self._args, **self._kwargs)
   File "controller.py", line 189, in slave_routine
     r_queue.put((s_id, r_gen.rollout(params)))
-  File "controller.py", line 123, in rollout
-    action = torch.argmax(action).item() + 1
+  File "controller.py", line 119, in rollout
+    obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
 KeyboardInterrupt

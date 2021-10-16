@@ -67,9 +67,9 @@ def follow_agent_closest_to_landmark_policy(obs, eps=0.5):
     dist_a1_l2 = distance(obs, obj1=2, obj2=1)
     dist_a2_l2 = distance(obs, obj1=3, obj2=1)
     if np.argmin([dist_a1_l1, dist_a2_l1, dist_a1_l2, dist_a2_l2]) < 2:
-        return follow(obs, obj=0)
+        return follow(obs, obj=0, eps=0)
     else:
-        return follow(obs, obj=1)
+        return follow(obs, obj=1, eps=0)
         
 def compute_reward(rewards):
         return sum(rewards) / episodes, statistics.stdev(rewards)
