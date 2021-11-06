@@ -9,3 +9,4 @@ matplotlib==3.0.2
 cloudpickle==2.0.0
 tqdm==4.62.3
 h5py==3.1.0
+stable-baselines3==1.2.0

@@ -85,8 +85,8 @@ class RolloutGenerator(object):
         self.env = SimpleAdversaryEnv(
             adversary_policy=follow_agent_closest_to_landmark_policy,
             agent_policy=follow_non_goal_landmark_policy,
-            adversary_eps=ad,
-            agent_eps=ag,
+            adversary_eps=0.5,
+            agent_eps=0,
             time_limit=time_limit)
         #self.env = simple_adversary_v2.env(N=2, max_cycles=time_limit, continuous_actions=False)
         self.device = device
