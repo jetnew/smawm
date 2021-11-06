@@ -66,7 +66,7 @@ class RolloutGenerator(object):
         # Loading world model and c-swm
         
         embedding_dim = 2
-        hidden_dim = 512
+        hidden_dim = 64
         action_dim = 5
         input_shape = 10
         num_objects = 3
