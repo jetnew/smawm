@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import sys
+import os
 from os.path import join, exists
 from os import mkdir, unlink, listdir, getpid, getcwd
 from time import sleep
@@ -205,7 +206,7 @@ display = False
 n_samples = 4
 pop_size = 4
 num_workers = min(32, n_samples * pop_size)
-time_limit = 1000
+time_limit = 100
 
 # create tmp dir if non existent and clean it if existent
 logdir = 'exp_dir_swm'
