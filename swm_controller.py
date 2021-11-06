@@ -121,6 +121,7 @@ class RolloutGenerator(object):
             - action: 1D np array
         """
         state = self.model.forward(obs)
+        print(state.shape)
         action = self.controller(state)
 
         self.model(obs)
@@ -199,7 +200,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
                 r_queue.put((s_id, r_gen.rollout(params)))
 
 
-ASIZE, RSIZE, LSIZE = 3, 30, 15
+ASIZE, LSIZE, RSIZE = 3, 15, 30
 display = False
 
 # multiprocessing variables
