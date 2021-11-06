@@ -151,8 +151,7 @@ class RolloutGenerator(object):
 
             if render:
                 self.env.render(mode='human')
-            if idx != 0:
-                cumulative += reward
+            cumulative += reward
             if done:
                 return - cumulative
             i += 1
