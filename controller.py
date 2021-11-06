@@ -102,7 +102,7 @@ class RolloutGenerator(object):
         if params is not None:
             load_parameters(params, self.controller)
 
-        self.env.reset()
+        observation = self.env.reset()
 
         hidden = [
             torch.zeros(1, RSIZE).to(self.device)
