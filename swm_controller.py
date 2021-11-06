@@ -93,7 +93,7 @@ class RolloutGenerator(object):
         self.model.load_state_dict(torch.load(model_file))
         self.model.eval()
 
-        self.controller = Controller(num_objs, embedding_dim, 3).to(device)  # TODO: Replace to 1!
+        self.controller = Controller(num_objects, embedding_dim, 3).to(device)  # TODO: Replace to 1!
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -271,7 +271,7 @@ if __name__ == "__main__":
     ################################################################################
     #                           Launch CMA                                         #
     ################################################################################
-    controller = Controller(LSIZE + RSIZE, ASIZE)  # dummy instance
+    controller = Controller(3, 2, ASIZE)  # dummy instance
 
     # define current best and load parameters
     cur_best = None
