@@ -16,7 +16,8 @@ from mdrnn import MDRNNCell
 import gym
 from pettingzoo.mpe import simple_adversary_v2
 import random
-from policies import follow_agent_closest_to_landmark_policy
+from policies import static_policy, random_policy, follow, follow_non_goal_landmark_policy, follow_agent_closest_to_landmark_policy, compute_reward
+from env import SimpleAdversaryEnv
 
 
 class Controller(nn.Module):
@@ -81,8 +82,13 @@ class RolloutGenerator(object):
             print("Loading Controller with reward {}".format(
                 ctrl_state['reward']))
             self.controller.load_state_dict(ctrl_state['state_dict'])
-
-        self.env = simple_adversary_v2.env(N=2, max_cycles=time_limit, continuous_actions=False)
+        self.env = SimpleAdversaryEnv(
+            adversary_policy=follow_agent_closest_to_landmark_policy,
+            agent_policy=follow_non_goal_landmark_policy,
+            adversary_eps=ad,
+            agent_eps=ag,
+            time_limit=time_limit)
+        #self.env = simple_adversary_v2.env(N=2, max_cycles=time_limit, continuous_actions=False)
         self.device = device
 
     def rollout(self, params, render=False):
@@ -98,50 +104,31 @@ class RolloutGenerator(object):
 
         self.env.reset()
 
-        agent_idx = {}
-        for i, agent in enumerate(self.env.agents):
-            agent_idx[agent] = i
-
         hidden = [
             torch.zeros(1, RSIZE).to(self.device)
             for _ in range(2)]
         
         actions = []
         cumulative = 0
-        adversary = 0
         i = 0
-        for agent in self.env.agent_iter():
-            observation, reward, done, info = self.env.last()
-            idx = agent_idx[agent]
+        done = False
+        while not done:
+            obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
+            _, latent_mu, _ = self.vae(obs)
+            action = self.controller(latent_mu, hidden[0])
+            action = torch.argmax(action).item() + 1
             
-            # If the agent is not the adversary, apply the trained policy.
-            if idx != 0:
-                obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
-                _, latent_mu, _ = self.vae(obs)
-                action = self.controller(latent_mu, hidden[0])
-                #print(action)
-                action = torch.argmax(action).item() + 1
+            observation, reward, done, info = self.env.step(action)
             
-            # Take random actions as the adversary.
-            else:
-                action = follow_agent_closest_to_landmark_policy(observation, eps=0.5) if not done else None
-                #action = random.randint(0,4) if not done else None
-            
-            self.env.step(action)
-            actions.append(torch.eye(5, device=self.device)[action])
-            
-            # At the end of all agents, at the last agent's turn, update the MDRNN's hidden state.
-            if idx == 2:
-                actions = torch.cat(actions, 0).unsqueeze(0)
-                _, _, _, _, _, hidden = self.mdrnn(actions, latent_mu, hidden)
-                actions = []
+            actions = [torch.eye(5, device=self.device)[a] for a in self.env.actions_taken]
+            actions = torch.cat(actions, 0).unsqueeze(0)
+            _, _, _, _, _, hidden = self.mdrnn(actions, latent_mu, hidden)
+            actions = []
 
             if render:
                 self.env.render(mode='human')
-            if idx == 2:
-                cumulative += reward
-            if idx == 0:
-                adversary += reward
+            
+            cumulative += reward
             if done:
                 return - cumulative
             i += 1

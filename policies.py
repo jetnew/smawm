@@ -47,10 +47,10 @@ def euclidean(x1, y1, x2, y2):
 def distance(obs, obj1, obj2):
     return euclidean(obs[obj1*2], obs[obj1*2+1], obs[obj2*2], obs[obj2*2+1])
     
-def static_policy():
+def static_policy(obs=None):
     return 0
     
-def random_policy():
+def random_policy(obs=None):
     return random.randint(0, 4)
     
 def follow(obs, obj=3, eps=0.5):
@@ -58,6 +58,18 @@ def follow(obs, obj=3, eps=0.5):
     if random.random() < eps:
         return random_policy()
     return move_towards(obs[obj*2], obs[obj*2+1])
+
+def follow_non_goal_landmark_policy(obs, eps=0.5):    
+    if random.random() < eps:
+        return random_policy()
+    d1 = distance(obs, obj1=0, obj2=1)
+    d2 = distance(obs, obj1=0, obj2=2)
+    assert d1 == 0 or d2 == 0
+    if d1 == 0:
+        return follow(obs, obj=2, eps=0)
+    elif d2 == 0:
+        return follow(obs, obj=1, eps=0)
+    raise Exception("Didn't work as expected")
     
 def follow_agent_closest_to_landmark_policy(obs, eps=0.5):
     if random.random() < eps:
