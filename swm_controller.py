@@ -34,9 +34,9 @@ class Controller(nn.Module):
         
 class Controller(nn.Module):
     """ Controller """
-    def __init__(self, latents, actions):
+    def __init__(self, latents, num_objs, actions):
         super().__init__()
-        self.fc1 = nn.Linear(latents, 32)
+        self.fc1 = nn.Linear(latents + num_objs, 32)
         self.fc2 = nn.Linear(32, 32)
         self.fc3 = nn.Linear(32, actions)        
         self.act1 = nn.Sigmoid()
@@ -93,7 +93,7 @@ class RolloutGenerator(object):
         self.model.load_state_dict(torch.load(model_file))
         self.model.eval()
 
-        self.controller = Controller(LSIZE + RSIZE, 3).to(device)  # TODO: Replace to 1!
+        self.controller = Controller(num_objs, embedding_dim, 3).to(device)  # TODO: Replace to 1!
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -200,7 +200,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
                 r_queue.put((s_id, r_gen.rollout(params)))
 
 
-ASIZE, LSIZE, RSIZE = 3, 15, 30
+ASIZE = 3
 display = False
 
 # multiprocessing variables
