@@ -36,7 +36,7 @@ class Controller(nn.Module):
     """ Controller """
     def __init__(self, latents, num_objs, actions):
         super().__init__()
-        self.fc1 = nn.Linear(latents + num_objs, 32)
+        self.fc1 = nn.Linear(latents * num_objs, 32)
         self.fc2 = nn.Linear(32, 32)
         self.fc3 = nn.Linear(32, actions)        
         self.act1 = nn.Sigmoid()
@@ -44,7 +44,6 @@ class Controller(nn.Module):
 
     def forward(self, *inputs):
         x = torch.cat(inputs, dim=1)
-        x = torch.flatten(x, start_dim=1)
         x = self.act1(self.fc1(x))
         x = self.act1(self.fc2(x))
         return self.act2(self.fc3(x))
