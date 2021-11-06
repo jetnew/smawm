@@ -1,0 +1,25 @@
+Process Process-13:
+Traceback (most recent call last):
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 258, in _bootstrap
+    self.run()
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 93, in run
+    self._target(*self._args, **self._kwargs)
+  File "swm_controller.py", line 199, in slave_routine
+    r_queue.put((s_id, r_gen.rollout(params)))
+  File "swm_controller.py", line 148, in rollout
+    action = self.get_action_and_transition(obs)
+  File "swm_controller.py", line 124, in get_action_and_transition
+    state = self.model.forward(obs)
+  File "/home/jetnew/smawm/swm.py", line 280, in forward
+    return self.obj_encoder(obs)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/jetnew/smawm/swm.py", line 426, in forward
+    h = self.act1(self.fc1(ins))
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/modules/linear.py", line 103, in forward
+    return F.linear(input, self.weight, self.bias)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/functional.py", line 1848, in linear
+    return torch._C._nn.linear(input, weight, bias)
+KeyboardInterrupt
