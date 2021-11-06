@@ -1,0 +1,17 @@
+Process Process-4:
+Traceback (most recent call last):
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 258, in _bootstrap
+    self.run()
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 93, in run
+    self._target(*self._args, **self._kwargs)
+  File "controller.py", line 176, in slave_routine
+    r_queue.put((s_id, r_gen.rollout(params)))
+  File "controller.py", line 118, in rollout
+    action = self.controller(latent_mu, hidden[0])
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "controller.py", line 35, in forward
+    x = self.act1(self.fc1(x))
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1097, in _call_impl
+    forward_call = (self._slow_forward if torch._C._get_tracing_state() else self.forward)
+KeyboardInterrupt
