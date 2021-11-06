@@ -61,7 +61,7 @@ class RolloutGenerator(object):
     :attr device: device used to run VAE, MDRNN and Controller
     :attr time_limit: rollouts have a maximum of time_limit timesteps
     """
-    def __init__(self, mdir, device, time_limit):
+    def __init__(self, mdir, device, time_limit, ctrl_file):
         """ Build vae, rnn, controller and environment. """
         # Loading world model and c-swm
         
@@ -189,7 +189,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     sys.stderr = open(join(tmp_dir, str(getpid()) + '.err'), 'a')
 
     with torch.no_grad():
-        r_gen = RolloutGenerator(logdir, device, time_limit)
+        r_gen = RolloutGenerator(logdir, device, time_limit, ctrl_file)
 
         while e_queue.empty():
             if p_queue.empty():
