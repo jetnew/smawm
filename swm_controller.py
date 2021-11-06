@@ -76,7 +76,7 @@ class RolloutGenerator(object):
         model.eval()
         
 
-        self.controller = Controller(LSIZE, RSIZE, 3).to(device)  # TODO: Replace to 1!
+        self.controller = Controller(LSIZE + RSIZE, 3).to(device)  # TODO: Replace to 1!
 
         # load controller if it was previously saved
         if exists(ctrl_file):
