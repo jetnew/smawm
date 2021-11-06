@@ -91,7 +91,7 @@ class RolloutGenerator(object):
             
         save_folder = "checkpoints"
         model_file = os.path.join(save_folder, 'model.pt')
-        self.model.load_state_dict(torch.load(model_file))
+        self.model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
         self.model.eval()
 
         self.controller = Controller(num_objects, embedding_dim, 3).to(device)  # TODO: Replace to 1!
