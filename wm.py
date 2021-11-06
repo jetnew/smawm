@@ -19,7 +19,7 @@ generator = RolloutGenerator(logdir, device, 100)
 
 with torch.no_grad():
     scores = []
-    trials = 10
+    trials = 100
     for _ in tqdm(range(trials)):
         score = -generator.rollout(None, render=True)
         scores.append(score)
