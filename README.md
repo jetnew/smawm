@@ -23,3 +23,38 @@ python swm.py
 python controller.py
 python wm.py
 ```
+
+## Project Breakdown
+
+### Dataset Generation
+- mpe.py - Generates MPE dataset.
+- mpe_spurious.py - Generates MPE dataset for the spurious context.
+- 
+### World Model
+- loaders.py - Utilities for loading data for WM.
+- vae.py - Trains the WM variational autoencoder.
+- mdrnn.py - Defines the WM mixture density recurrent neural network.
+- wm.py - Evaluates WM on the MPE environment.
+- controller.py - Trains the WM controller.
+
+### Structured World Model
+- learning.py - Utilities for SWM
+- swm.py - Defines the SWM.
+- swm_controller.py - Trains the SWM controller.
+- mpe_swm.py - Evaluates SWM on the MPE environment.
+
+### Utilities
+- policies.py - Defines fixed policies for the environment.
+
+### Miscellaneous
+- /datasets/mpe - Contains 1000 episodes of length 1000 each, collected from the MPE environment in .npz files.
+- /exp_dir
+  - /ctrl - Contains trained model of the WM controller.
+  - /mdrnn - Contains trained model of the WM mixture density recurrent neural network.
+  - /vae - Contains trained model of the WM variational autoencoder.
+- agents.py - NOT USED.
+- dev.py - Useless file for random testing/development.
+- misc.py - Utilities for ?
+- models.py - NOT USED?
+- requirements.txt - List of dependencies.
+- test.py - Useless file for random testing/development.
