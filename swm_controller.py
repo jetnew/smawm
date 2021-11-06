@@ -17,6 +17,8 @@ import gym
 from pettingzoo.mpe import simple_adversary_v2
 import random
 import swm
+from policies import static_policy, random_policy, follow, follow_non_goal_landmark_policy, follow_agent_closest_to_landmark_policy, compute_reward
+from env import SimpleAdversaryEnv
 
 
 class Controller(nn.Module):
@@ -82,8 +84,13 @@ class RolloutGenerator(object):
             print("Loading Controller with reward {}".format(
                 ctrl_state['reward']))
             self.controller.load_state_dict(ctrl_state['state_dict'])
-
-        self.env = simple_adversary_v2.env(N=2, max_cycles=100, continuous_actions=False)
+        self.env = SimpleAdversaryEnv(
+            adversary_policy=follow_agent_closest_to_landmark_policy,
+            agent_policy=follow_non_goal_landmark_policy,
+            adversary_eps=0.5,
+            agent_eps=0.5,
+            time_limit=time_limit)
+        #self.env = simple_adversary_v2.env(N=2, max_cycles=100, continuous_actions=False)
         self.device = device
 
         self.time_limit = time_limit
@@ -113,25 +120,16 @@ class RolloutGenerator(object):
         if params is not None:
             load_parameters(params, self.controller)
 
-        self.env.reset()
-
-        agent_idx = {}
-        for i, agent in enumerate(self.env.agents):
-            agent_idx[agent] = i
+        observation = self.env.reset()
 
         cumulative = 0
         i = 0
-        for agent in self.env.agent_iter():
-            observation, reward, done, info = self.env.last()
-            idx = agent_idx[agent]
-            if idx != 0:
-                obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
-                action = self.get_action_and_transition(obs)
-                action = min(max(round(action[0]), 0), 4)
-            else:
-                action = random.randint(0,4) if not done else None
-            
-            self.env.step(action)
+        done = False
+        while not done:
+            obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
+            action = self.get_action_and_transition(obs)
+            action = min(max(round(action[0]), 0), 4)
+            observation, reward, done, info = self.env.step(action)
 
             if render:
                 self.env.render(mode='human')
