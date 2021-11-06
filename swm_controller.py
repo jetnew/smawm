@@ -76,7 +76,7 @@ class RolloutGenerator(object):
         ignore_action = False
         copy_action = False
         use_encoder = 'small'
-        model = swm.ContrastiveSWM(
+        self.model = swm.ContrastiveSWM(
             embedding_dim=embedding_dim,
             hidden_dim=hidden_dim,
             action_dim=action_dim,
@@ -90,9 +90,8 @@ class RolloutGenerator(object):
             
         save_folder = "checkpoints"
         model_file = os.path.join(save_folder, 'model.pt')
-        model.load_state_dict(torch.load(model_file))
-        model.eval()
-        
+        self.model.load_state_dict(torch.load(model_file))
+        self.model.eval()
 
         self.controller = Controller(LSIZE + RSIZE, 3).to(device)  # TODO: Replace to 1!
 
