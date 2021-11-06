@@ -44,6 +44,7 @@ class Controller(nn.Module):
 
     def forward(self, *inputs):
         x = torch.cat(inputs, dim=1)
+        x = torch.flatten(x, start_dim=1)
         x = self.act1(self.fc1(x))
         x = self.act1(self.fc2(x))
         return self.act2(self.fc3(x))
