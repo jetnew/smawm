@@ -208,7 +208,7 @@ num_workers = min(32, n_samples * pop_size)
 time_limit = 1000
 
 # create tmp dir if non existent and clean it if existent
-logdir = 'exp_dir'
+logdir = 'exp_dir_swm'
 tmp_dir = join(getcwd(), logdir, 'tmp')
 
 
