@@ -253,7 +253,7 @@ if __name__ == "__main__":
     ################################################################################
     #                           Launch CMA                                         #
     ################################################################################
-    controller = Controller(LSIZE, RSIZE, ASIZE)  # dummy instance
+    controller = Controller(LSIZE + RSIZE, ASIZE)  # dummy instance
 
     # define current best and load parameters
     cur_best = None
