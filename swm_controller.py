@@ -52,16 +52,18 @@ class RolloutGenerator(object):
         # Loading world model and c-swm
         ctrl_file = join(mdir, 'ctrl', 'best.tar')
         
+        input_shape = 10
         embedding_dim = 15
         hidden_dim = 10
         action_dim = 5
-        input_shape = 10
         num_objects = 3
         sigma = 0.5
         hinge = 1.0
         ignore_action = False
         copy_action = False
         use_encoder = 'small'
+        use_decoder = False
+        learning_rate = 5e-4
         self.model = swm.ContrastiveSWM(
             embedding_dim=embedding_dim,
             hidden_dim=hidden_dim,
