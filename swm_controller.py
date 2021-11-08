@@ -26,8 +26,8 @@ class Controller(nn.Module):
     """ Controller """
     def __init__(self, latents, num_objs, actions):
         super().__init__()
-        self.fc = nn.Linear(latents * num_objs, 16)
-        self.fc2 = nn.Linear(16, actions)
+        self.fc = nn.Linear(latents * num_objs, 32)
+        self.fc2 = nn.Linear(32, actions)
         self.act1 = nn.Sigmoid()
         self.act = nn.Softmax(dim=1)
 
