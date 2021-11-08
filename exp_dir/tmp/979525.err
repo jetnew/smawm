@@ -1,4 +1,4 @@
-Process Process-10:
+Process Process-8:
 Traceback (most recent call last):
   File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 258, in _bootstrap
     self.run()
@@ -10,8 +10,6 @@ Traceback (most recent call last):
     _, _, _, _, _, hidden = self.mdrnn(actions, latent_mu, hidden)
   File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
     return forward_call(*input, **kwargs)
-  File "/home/jetnew/smawm/mdrnn.py", line 151, in forward
-    logpi = f.log_softmax(pi, dim=-1)
-  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/torch/nn/functional.py", line 1769, in log_softmax
-    ret = input.log_softmax(dim)
+  File "/home/jetnew/smawm/mdrnn.py", line 147, in forward
+    sigmas = torch.exp(sigmas)
 KeyboardInterrupt
