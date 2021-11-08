@@ -62,7 +62,7 @@ mdir = 'exp_dir_swm'
 ctrl_file = join(mdir, 'ctrl', 'best.tar')
 
 embedding_dim = 15
-hidden_dim = 10
+hidden_dim = 32
 action_dim = 5
 input_shape = 10
 num_objects = 3
@@ -83,18 +83,18 @@ model = swm.ContrastiveSWM(
     copy_action=copy_action,
     encoder=use_encoder).to(device)
     
-#save_folder = "checkpoints"
-#model_file = os.path.join(save_folder, 'model.pt')
-#model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
-#model.eval()
+save_folder = "checkpoints"
+model_file = os.path.join(save_folder, 'model.pt')
+model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
+model.eval()
 
 controller = Controller(num_objects, embedding_dim, 3).to(device)
 
-#if exists(ctrl_file):
-#    ctrl_state = torch.load(ctrl_file, map_location={'cuda:0': str(device)})
-#    print("Loading Controller with reward {}".format(
-#        ctrl_state['reward']))
-#    controller.load_state_dict(ctrl_state['state_dict'])
+if exists(ctrl_file):
+    ctrl_state = torch.load(ctrl_file, map_location={'cuda:0': str(device)})
+    print("Loading Controller with reward {}".format(
+        ctrl_state['reward']))
+    controller.load_state_dict(ctrl_state['state_dict'])
     
 swm_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 controller_params = sum(p.numel() for p in controller.parameters() if p.requires_grad)

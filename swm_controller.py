@@ -81,7 +81,7 @@ class RolloutGenerator(object):
         self.model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
         self.model.eval()
 
-        self.controller = Controller(num_objects, embedding_dim, 3).to(device)  # TODO: Replace to 1!
+        self.controller = Controller(num_objects, embedding_dim, 4).to(device)
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -110,6 +110,7 @@ class RolloutGenerator(object):
         """
         state = self.model.forward(obs)
         action = self.controller(state)
+        action = torch.argmax(action).item() + 1
 
         self.model(obs)
         return action.squeeze().cpu().numpy()
@@ -133,7 +134,7 @@ class RolloutGenerator(object):
         while not done:
             obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
             action = self.get_action_and_transition(obs)
-            action = min(max(round(action[0]), 0), 4)
+            
             observation, reward, done, info = self.env.step(action)
 
             if render:
