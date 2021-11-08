@@ -112,8 +112,7 @@ class RolloutGenerator(object):
         action = self.controller(state)
         action = torch.argmax(action).item() + 1
 
-        self.model(obs)
-        return action.squeeze().cpu().numpy()
+        return action
 
     def rollout(self, params, render=False):
         """ Execute a rollout and returns minus cumulative reward.
