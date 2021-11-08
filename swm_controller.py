@@ -81,7 +81,7 @@ class RolloutGenerator(object):
         self.model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
         self.model.eval()
 
-        self.controller = Controller(num_objects, embedding_dim, 4).to(device)
+        self.controller = Controller(num_objects, embedding_dim, ASIZE).to(device)
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -95,7 +95,6 @@ class RolloutGenerator(object):
             adversary_eps=0.5,
             agent_eps=0.5,
             time_limit=time_limit)
-        #self.env = simple_adversary_v2.env(N=2, max_cycles=100, continuous_actions=False)
         self.device = device
 
         self.time_limit = time_limit
@@ -110,8 +109,6 @@ class RolloutGenerator(object):
         """
         state = self.model.forward(obs)
         action = self.controller(state)
-        action = torch.argmax(action).item() + 1
-
         return action
 
     def rollout(self, params, render=False):
@@ -133,7 +130,7 @@ class RolloutGenerator(object):
         while not done:
             obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
             action = self.get_action_and_transition(obs)
-            
+            action = torch.argmax(action).item()
             observation, reward, done, info = self.env.step(action)
 
             if render:
@@ -187,7 +184,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
                 r_queue.put((s_id, r_gen.rollout(params)))
 
 
-ASIZE = 4
+ASIZE = 5
 display = False
 
 # multiprocessing variables

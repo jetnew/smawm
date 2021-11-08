@@ -69,7 +69,7 @@ class RolloutGenerator(object):
         self.mdrnn.load_state_dict(
             {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
 
-        self.controller = Controller(LSIZE, RSIZE, 4).to(device)
+        self.controller = Controller(LSIZE, RSIZE, 5).to(device)
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     ################################################################################
     #                           Launch CMA                                         #
     ################################################################################
-    controller = Controller(LSIZE, RSIZE, 4)  # dummy instance
+    controller = Controller(LSIZE, RSIZE, 5)  # dummy instance
 
     # define current best and load parameters
     cur_best = None
