@@ -74,7 +74,7 @@ class RolloutGenerator(object):
         self.mdrnn.load_state_dict(
             {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
 
-        self.controller = Controller(LSIZE, RSIZE, 5).to(device)
+        self.controller = Controller(LSIZE, RSIZE, 4).to(device)
 
         # load controller if it was previously saved
         if exists(ctrl_file):
@@ -116,7 +116,7 @@ class RolloutGenerator(object):
             obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
             _, latent_mu, _ = self.vae(obs)
             action = self.controller(latent_mu, hidden[0])
-            action = torch.argmax(action).item()
+            action = torch.argmax(action).item() + 1
             
             observation, reward, done, info = self.env.step(action)
             
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     ################################################################################
     #                           Launch CMA                                         #
     ################################################################################
-    controller = Controller(LSIZE, RSIZE, 5)  # dummy instance
+    controller = Controller(LSIZE, RSIZE, 4)  # dummy instance
 
     # define current best and load parameters
     cur_best = None

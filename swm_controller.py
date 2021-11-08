@@ -135,7 +135,7 @@ class RolloutGenerator(object):
         while not done:
             obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
             action = self.get_action_and_transition(obs)
-            action = torch.argmax(action).item()
+            action = torch.argmax(action).item() + 1
             observation, reward, done, info = self.env.step(action)
 
             if render:
@@ -189,7 +189,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
                 r_queue.put((s_id, r_gen.rollout(params)))
 
 
-ASIZE = 5
+ASIZE = 4
 display = False
 
 # multiprocessing variables
