@@ -166,6 +166,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     if torch.cuda.is_available():
         gpu = p_index % torch.cuda.device_count()
         device = torch.device('cuda:{}'.format(gpu))
+        device = torch.device('cpu')
     else:
         device = torch.device('cpu')
 
