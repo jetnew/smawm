@@ -26,8 +26,8 @@ class Controller(nn.Module):
     """ Controller """
     def __init__(self, latents, num_objs, actions):
         super().__init__()
-        self.fc = nn.Linear(latents * num_objs, 32)
-        self.fc2 = nn.Linear(32, actions)
+        self.fc = nn.Linear(latents * num_objs, 64)
+        self.fc2 = nn.Linear(64, actions)
         self.act1 = nn.Sigmoid()
         self.act = nn.Softmax(dim=1)
 
@@ -168,7 +168,6 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     if torch.cuda.is_available():
         gpu = p_index % torch.cuda.device_count()
         device = torch.device('cuda:{}'.format(gpu))
-        device = torch.device('cpu')
     else:
         device = torch.device('cpu')
 

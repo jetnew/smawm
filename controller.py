@@ -24,8 +24,8 @@ class Controller(nn.Module):
     """ Controller """
     def __init__(self, latents, recurrents, actions):
         super().__init__()
-        self.fc = nn.Linear(latents + recurrents, 32)
-        self.fc2 = nn.Linear(32, actions)
+        self.fc = nn.Linear(latents + recurrents, 64)
+        self.fc2 = nn.Linear(64, actions)
         self.act1 = nn.Sigmoid()
         self.act = nn.Softmax(dim=1)
 
