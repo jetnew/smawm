@@ -491,7 +491,7 @@ if __name__ == "__main__":
     
     input_shape = 10
     embedding_dim = 15
-    hidden_dim = 64
+    hidden_dim = 10
     action_dim = 5
     num_objects = 3
     sigma = 0.5

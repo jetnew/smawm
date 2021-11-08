@@ -53,7 +53,7 @@ class RolloutGenerator(object):
         ctrl_file = join(mdir, 'ctrl', 'best.tar')
         
         embedding_dim = 15
-        hidden_dim = 64
+        hidden_dim = 10
         action_dim = 5
         input_shape = 10
         num_objects = 3
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     ################################################################################
     #                           Launch CMA                                         #
     ################################################################################
-    controller = Controller(3, 2, ASIZE)  # dummy instance
+    controller = Controller(3, 15, ASIZE)  # dummy instance
 
     # define current best and load parameters
     cur_best = None
@@ -273,7 +273,7 @@ if __name__ == "__main__":
 
     epoch = 0
     log_step = 3
-    target_return = 300
+    target_return = 50
     while not es.stop():
         if cur_best is not None and - cur_best > target_return:
             print("Already better than target, breaking...")
