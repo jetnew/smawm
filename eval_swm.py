@@ -21,7 +21,7 @@ with torch.no_grad():
     scores = []
     trials = 100
     for _ in tqdm(range(trials)):
-        score = -generator.rollout(None, render=False)
+        score = -generator.rollout(None, render=True)
         scores.append(score)
 
 print(f"Score: {sum(scores)/trials:.2f} +- {statistics.stdev(scores):.2f}")
