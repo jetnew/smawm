@@ -18,7 +18,7 @@ def save_list_dict_h5py(array_dict, fname):
                 grp.create_dataset(key, data=array_dict[i][key])
 
 episodes = 1000
-episode_length = 10
+episode_length = 1000
 
 replay_buffer = []
 for i in tqdm(range(episodes)):

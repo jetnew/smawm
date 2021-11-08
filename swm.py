@@ -536,7 +536,7 @@ if __name__ == "__main__":
     step = 0
     best_loss = 1e9
     
-    epochs = 100
+    epochs = 3
     for epoch in range(1, epochs + 1):
         model.train()
         train_loss = 0
