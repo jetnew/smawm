@@ -77,10 +77,10 @@ model = swm.ContrastiveSWM(
     copy_action=copy_action,
     encoder=use_encoder).to(device)
     
-save_folder = "checkpoints"
-model_file = os.path.join(save_folder, 'model.pt')
-model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
-model.eval()
+#save_folder = "checkpoints"
+#model_file = os.path.join(save_folder, 'model.pt')
+#model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
+#model.eval()
 
 swm_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
