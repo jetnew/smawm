@@ -52,7 +52,7 @@ class RolloutGenerator(object):
         # Loading world model and c-swm
         ctrl_file = join(mdir, 'ctrl', 'best.tar')
         
-        embedding_dim = 2
+        embedding_dim = 15
         hidden_dim = 64
         action_dim = 5
         input_shape = 10
