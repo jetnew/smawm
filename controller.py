@@ -111,7 +111,7 @@ class RolloutGenerator(object):
             obs = torch.from_numpy(observation).unsqueeze(0).to(self.device)
             _, latent_mu, _ = self.vae(obs)
             action = self.controller(latent_mu, hidden[0])
-            action = torch.argmax(action).item() + 1
+            action = torch.argmax(action).item()
             
             observation, reward, done, info = self.env.step(action)
             
