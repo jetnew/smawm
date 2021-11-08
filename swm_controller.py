@@ -26,16 +26,18 @@ class Controller(nn.Module):
     """ Controller """
     def __init__(self, latents, num_objs, actions):
         super().__init__()
-        self.fc = nn.Linear(latents * num_objs, 64)
-        self.fc2 = nn.Linear(64, actions)
+        self.fc1 = nn.Linear(latents * num_objs, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64, actions)
         self.act1 = nn.Sigmoid()
-        self.act = nn.Softmax(dim=1)
+        self.act2 = nn.Softmax(dim=1)
 
     def forward(self, *inputs):
         x = torch.cat(inputs, dim=1)
         x = torch.flatten(x, start_dim=1)
-        x = self.act1(self.fc(x))
-        return self.act(self.fc2(x))
+        x = self.act1(self.fc1(x))
+        x = self.act1(self.fc2(x))
+        return self.act2(self.fc3(x))
         
         
 class RolloutGenerator(object):
@@ -168,6 +170,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
     if torch.cuda.is_available():
         gpu = p_index % torch.cuda.device_count()
         device = torch.device('cuda:{}'.format(gpu))
+        device = torch.device('cpu')
     else:
         device = torch.device('cpu')
 
@@ -275,7 +278,7 @@ if __name__ == "__main__":
 
     epoch = 0
     log_step = 3
-    target_return = 50
+    target_return = 55
     while not es.stop():
         if cur_best is not None and - cur_best > target_return:
             print("Already better than target, breaking...")
