@@ -1,0 +1,29 @@
+Process Process-4:
+Traceback (most recent call last):
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 258, in _bootstrap
+    self.run()
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/multiprocessing/process.py", line 93, in run
+    self._target(*self._args, **self._kwargs)
+  File "controller.py", line 171, in slave_routine
+    r_queue.put((s_id, r_gen.rollout(params)))
+  File "controller.py", line 116, in rollout
+    observation, reward, done, info = self.env.step(action)
+  File "/home/jetnew/smawm/env.py", line 32, in step
+    self.observations, rewards, dones, infos = self._env.step(actions)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/conversions.py", line 85, in step
+    self.aec_env.step(actions[agent])
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/wrappers/order_enforcing.py", line 68, in step
+    super().step(action)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/wrappers/base.py", line 68, in step
+    self.env.step(action)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/wrappers/assert_out_of_bounds.py", line 24, in step
+    super().step(action)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/utils/wrappers/base.py", line 68, in step
+    self.env.step(action)
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/mpe/_mpe_utils/simple_env.py", line 211, in step
+    self._execute_world_step()
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/mpe/_mpe_utils/simple_env.py", line 142, in _execute_world_step
+    self._set_action(scenario_action, agent, self.action_spaces[agent.name])
+  File "/home/jetnew/anaconda3/envs/smawm/lib/python3.6/site-packages/pettingzoo/mpe/_mpe_utils/simple_env.py", line 169, in _set_action
+    agent.action.u = np.zeros(self.world.dim_p)
+KeyboardInterrupt
