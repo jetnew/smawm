@@ -56,7 +56,7 @@ mdir = 'exp_dir_swm'
 ctrl_file = join(mdir, 'ctrl', 'best.tar')
 
 embedding_dim = 15
-hidden_dim = 32
+hidden_dim = 512
 action_dim = 5
 input_shape = 10
 num_objects = 3
