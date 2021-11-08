@@ -188,7 +188,7 @@ def slave_routine(p_queue, r_queue, e_queue, p_index):
                 r_queue.put((s_id, r_gen.rollout(params)))
 
 
-ASIZE = 3
+ASIZE = 4
 display = False
 
 # multiprocessing variables
