@@ -131,7 +131,7 @@ class SWM:
             
         save_folder = "checkpoints"
         model_file = os.path.join(save_folder, 'model.pt')
-        self.model.load_state_dict(torch.l  oad(model_file, map_location={'cuda:0': 'cpu'}))
+        self.model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
         self.model.eval()
     def forward(self, obs):
         obs = torch.from_numpy(obs).unsqueeze(0).to(self.device)

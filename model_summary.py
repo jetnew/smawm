@@ -16,6 +16,10 @@ import os
 print("===== WM =====")
 mdir = 'exp_dir'
 device = torch.device('cpu')
+INPUT_DIM = 10
+LATENT_DIM = 15
+RSIZE = 30
+GAUSSIANS = 5
 
 
 vae_file, rnn_file, ctrl_file = \
@@ -29,30 +33,20 @@ for m, s in (('VAE', vae_state), ('MDRNN', rnn_state)):
     print("Loading {} at epoch {} "
           "with test loss {}".format(m, s['epoch'], s['precision']))
               
-              
-vae = VAE(10, 15).to(device)
+
+vae = VAE(INPUT_DIM, LATENT_DIM).to(device)
 vae.load_state_dict(vae_state['state_dict'])
 
-mdrnn = MDRNNCell(15, 15, 30, 5).to(device)
+mdrnn = MDRNNCell(LATENT_DIM, 15, RSIZE, GAUSSIANS).to(device)
 mdrnn.load_state_dict(
     {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
-
-controller = Controller(15, 30, 4).to(device)
-
-if exists(ctrl_file):
-    ctrl_state = torch.load(ctrl_file, map_location={'cuda:0': str(device)})
-    print("Loading Controller with reward {}".format(
-        ctrl_state['reward']))
-    controller.load_state_dict(ctrl_state['state_dict'])
     
 vae_params = sum(p.numel() for p in vae.parameters() if p.requires_grad)
 mdrnn_params = sum(p.numel() for p in mdrnn.parameters() if p.requires_grad)
-controller_params = sum(p.numel() for p in controller.parameters() if p.requires_grad)
 
 print("VAE trainable params:", vae_params, vae)
 print("MDRNN trainable params:", mdrnn_params, mdrnn)
-print("Controller trainable params:", controller_params, controller)
-print("Total trainable params:", vae_params + mdrnn_params + controller_params)
+print("Total trainable params:", vae_params + mdrnn_params)
 
 
 # ====== SWM =====
@@ -88,17 +82,7 @@ model_file = os.path.join(save_folder, 'model.pt')
 model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
 model.eval()
 
-controller = Controller(num_objects, embedding_dim, 3).to(device)
-
-if exists(ctrl_file):
-    ctrl_state = torch.load(ctrl_file, map_location={'cuda:0': str(device)})
-    print("Loading Controller with reward {}".format(
-        ctrl_state['reward']))
-    controller.load_state_dict(ctrl_state['state_dict'])
-    
 swm_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-controller_params = sum(p.numel() for p in controller.parameters() if p.requires_grad)
 
 print("SWM trainable params:", swm_params, model)
-print("Controller trainable params:", controller_params, controller)
-print("Total trainable params:", swm_params + controller_params)
+print("Total trainable params:", swm_params)
