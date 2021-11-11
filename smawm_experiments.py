@@ -95,7 +95,7 @@ run_experiment({
 })
 """
 
-
+"""
 print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
 run_experiment({
     'use_swm': True,
@@ -111,4 +111,42 @@ run_experiment({
     'use_swm': True,
     'swm_epochs': 5,
     'train_timesteps': 50_000,
+})
+"""
+"""
+print("===== Experiment - Compare SWM (swm_epoch=1) =====")
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 1,
+    'train_timesteps': 50_000,
+})
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 1,
+    'train_timesteps': 50_000,
+})
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 1,
+    'train_timesteps': 50_000,
+})
+"""
+print("===== Experiment - Compare SWM (swm_hidden_dim=64) =====")
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 1,
+    'train_timesteps': 50_000,
+    'swm_hidden_dim': 64,
+})
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 1,
+    'train_timesteps': 50_000,
+    'swm_hidden_dim': 64,
+})
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 1,
+    'train_timesteps': 50_000,
+     'swm_hidden_dim': 64,
 })

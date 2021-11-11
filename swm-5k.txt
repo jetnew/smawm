@@ -1,0 +1,19 @@
+===== Experiment - Compare WM vs SWM over 3 seeds =====
+ddir=datasets  data_dir=datasets/mpe  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=False  use_swm=True  vae_dim=15  vae_epochs=10  mdrnn_dim=30  mdrnn_epochs=10  swm_latent_dim=15  swm_hidden_dim=32  swm_epochs=5  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+SWM Loss: 0.001
+MLP Params: 2957
+GNN Params: 6479
+SWM Params: 9436
+SWM: 24.577 +- 31.409
+ddir=datasets  data_dir=datasets/mpe  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=False  use_swm=True  vae_dim=15  vae_epochs=10  mdrnn_dim=30  mdrnn_epochs=10  swm_latent_dim=15  swm_hidden_dim=32  swm_epochs=5  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+SWM Loss: 0.001
+MLP Params: 2957
+GNN Params: 6479
+SWM Params: 9436
+SWM: 52.024 +- 34.529
+ddir=datasets  data_dir=datasets/mpe  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=False  use_swm=True  vae_dim=15  vae_epochs=10  mdrnn_dim=30  mdrnn_epochs=10  swm_latent_dim=15  swm_hidden_dim=32  swm_epochs=5  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+SWM Loss: 0.001
+MLP Params: 2957
+GNN Params: 6479
+SWM Params: 9436
+SWM: 24.358 +- 33.256
