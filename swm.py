@@ -414,7 +414,7 @@ class EncoderMLP(nn.Module):
         self.output_dim = output_dim
         self.num_objects = num_objects
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        #self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
         self.fc3 = nn.Linear(hidden_dim, output_dim * self.num_objects)
 
         self.ln = nn.LayerNorm(hidden_dim)
@@ -424,7 +424,7 @@ class EncoderMLP(nn.Module):
 
     def forward(self, ins):
         h = self.act1(self.fc1(ins))
-        #h = self.act2(self.ln(self.fc2(h)))
+        h = self.act2(self.ln(self.fc2(h)))
         return self.fc3(h).view(-1, self.num_objects, self.output_dim)
 
 
