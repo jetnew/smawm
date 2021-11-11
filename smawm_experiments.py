@@ -26,7 +26,7 @@ def define_config():
     config.n_agents = 3
     config.action_dim = 5
     config.input_dim = 10
-    config.use_wm = False
+    config.use_wm = True
     config.use_swm = False
     
     # WM
@@ -45,7 +45,7 @@ def define_config():
     config.policy = 'ppo'  # 'ppo' or 'a2c'
     config.adversary_eps = 0.5
     config.agent_eps = 0.5
-    config.train_timesteps = 20_000
+    config.train_timesteps = 50_000
     config.eval_episodes = 100
     return config
     
@@ -74,22 +74,7 @@ run_experiment({
 })
 """
 
-print("===== Experiment - Compare SWM (wm-epochs=3) =====")
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 1,
-    'train_timesteps': 50_000,
-    'swm_hidden_dim': 64,
-})
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 1,
-    'train_timesteps': 50_000,
-    'swm_hidden_dim': 64,
-})
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 1,
-    'train_timesteps': 50_000,
-     'swm_hidden_dim': 64,
-})
+print("===== Experiment - Train WM with 3 epochs =====")
+run_experiment({})
+run_experiment({})
+run_experiment({})
