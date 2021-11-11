@@ -26,8 +26,8 @@ def define_config():
     config.n_agents = 3
     config.action_dim = 5
     config.input_dim = 10
-    config.use_wm = True
-    config.use_swm = False
+    config.use_wm = False
+    config.use_swm = True
     
     # WM
     config.vae_dim = 15
@@ -74,7 +74,7 @@ run_experiment({
 })
 """
 
-print("===== Experiment - Train WM with 3 epochs =====")
+print("===== Experiment - Train SWM with 1k-length episodes =====")
 run_experiment({})
 run_experiment({})
 run_experiment({})
