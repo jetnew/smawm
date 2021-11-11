@@ -1,4 +1,4 @@
-# RUN WITH python smawm_experiments.py > experiment_results.txt
+# RUN WITH python smawm_experiments.py > results.txt
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -64,7 +64,15 @@ def run_experiment(params):
         swm_experiment(config)
     model_summary(config)
     evaluate_experiment(config)
-
+"""
+run_experiment({
+    'use_wm': True,
+    'vae_epochs': 1,
+    'mdrnn_epochs': 1,
+    'train_timesteps': 1000,
+    'eval_episodes': 1,
+})
+"""
 
 print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
 run_experiment({
@@ -82,4 +90,3 @@ run_experiment({
     'use_swm': True,
     'train_timesteps': 50_000,
 })
-
