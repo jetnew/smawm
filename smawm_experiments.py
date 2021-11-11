@@ -31,16 +31,14 @@ def define_config():
     
     # WM
     config.vae_dim = 15
-    config.vae_epochs = 10
-    config.vae_dim = 15
-    config.vae_epochs = 10
+    config.vae_epochs = 3
     config.mdrnn_dim = 30
-    config.mdrnn_epochs = 10
+    config.mdrnn_epochs = 3
     
     # SWM    
     config.swm_latent_dim = 15
     config.swm_hidden_dim = 32
-    config.swm_epochs = 3
+    config.swm_epochs = 1
     
     # Evaluation
     config.exp_dir = 'exp_dir'
@@ -76,62 +74,7 @@ run_experiment({
 })
 """
 
-"""
-print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
-run_experiment({
-    'use_wm': True,
-    'use_swm': True,
-    'train_timesteps': 50_000,
-})
-run_experiment({
-    'use_wm': True,
-    'use_swm': True,
-    'train_timesteps': 50_000,
-})
-run_experiment({
-    'use_wm': True,
-    'use_swm': True,
-    'train_timesteps': 50_000,
-})
-"""
-
-"""
-print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 5,
-    'train_timesteps': 50_000,
-})
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 5,
-    'train_timesteps': 50_000,
-})
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 5,
-    'train_timesteps': 50_000,
-})
-"""
-"""
-print("===== Experiment - Compare SWM (swm_epoch=1) =====")
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 1,
-    'train_timesteps': 50_000,
-})
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 1,
-    'train_timesteps': 50_000,
-})
-run_experiment({
-    'use_swm': True,
-    'swm_epochs': 1,
-    'train_timesteps': 50_000,
-})
-"""
-print("===== Experiment - Compare SWM (swm_hidden_dim=64) =====")
+print("===== Experiment - Compare SWM (wm-epochs=3) =====")
 run_experiment({
     'use_swm': True,
     'swm_epochs': 1,
