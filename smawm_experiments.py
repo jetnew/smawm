@@ -31,6 +31,7 @@ def define_config():
     
     # WM
     config.vae_dim = 15
+    config.vae_hdim = 32
     config.vae_epochs = 3
     config.mdrnn_dim = 30
     config.mdrnn_epochs = 3
