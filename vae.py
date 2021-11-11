@@ -54,10 +54,10 @@ class Encoder(nn.Module):
 
 class VAE(nn.Module):
     """ Variational Autoencoder """
-    def __init__(self, state_dim, latent_dim):
+    def __init__(self, state_dim, latent_dim, hidden_dim):
         super(VAE, self).__init__()
-        self.encoder = Encoder(state_dim, latent_dim)
-        self.decoder = Decoder(state_dim, latent_dim)
+        self.encoder = Encoder(state_dim, latent_dim, hidden_dim)
+        self.decoder = Decoder(state_dim, latent_dim, hidden_dim)
 
     def forward(self, x):
         mu, logsigma = self.encoder(x)
