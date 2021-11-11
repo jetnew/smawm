@@ -26,6 +26,8 @@ def define_config():
     config.n_agents = 3
     config.action_dim = 5
     config.input_dim = 10
+    config.use_wm = False
+    config.use_swm = False
     
     # WM
     config.vae_dim = 15
@@ -55,11 +57,29 @@ def run_experiment(params):
     for p in params:
         config[p] = params[p]
     print_config(config)
-    #vae_experiment(config)
-    #mdrnn_experiment(config)
-    #swm_experiment(config)
+    if config.use_wm:
+        vae_experiment(config)
+        mdrnn_experiment(config)
+    if config.use_swm:
+        swm_experiment(config)
     model_summary(config)
     evaluate_experiment(config)
 
-run_experiment({'vae_epochs':1, 'swm_epochs': 1, 'mdrnn_epochs': 1, 'train_timesteps': 2000})
-#run_experiment({'data_dir': ['a', 'b', 'c']})
+
+print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
+run_experiment({
+    'use_wm': True,
+    'use_swm': True,
+    'train_timesteps': 50_000,
+})
+run_experiment({
+    'use_wm': True,
+    'use_swm': True,
+    'train_timesteps': 50_000,
+})
+run_experiment({
+    'use_wm': True,
+    'use_swm': True,
+    'train_timesteps': 50_000,
+})
+
