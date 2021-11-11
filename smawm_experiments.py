@@ -64,7 +64,7 @@ def run_experiment(params):
         swm_experiment(config)
     model_summary(config)
     evaluate_experiment(config)
-
+"""
 run_experiment({
     'use_wm': True,
     'vae_epochs': 1,
@@ -74,7 +74,7 @@ run_experiment({
     'use_swm': True,
     'swm_epochs': 1,
 })
-
+"""
 
 """
 print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
