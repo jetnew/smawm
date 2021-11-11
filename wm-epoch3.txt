@@ -1,0 +1,22 @@
+===== Experiment - Train WM with 3 epochs =====
+ddir=datasets  data_dir=datasets/mpe  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=True  use_swm=False  vae_dim=15  vae_epochs=3  mdrnn_dim=30  mdrnn_epochs=3  swm_latent_dim=15  swm_hidden_dim=32  swm_epochs=1  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+VAE Loss: 13.772
+MDRNN Loss: 0.847
+VAE Params: 1045
+MDRNN Params: 12307
+WM Params: 13352
+WM: 48.105 +- 34.212
+ddir=datasets  data_dir=datasets/mpe  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=True  use_swm=False  vae_dim=15  vae_epochs=3  mdrnn_dim=30  mdrnn_epochs=3  swm_latent_dim=15  swm_hidden_dim=32  swm_epochs=1  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+VAE Loss: 13.979
+MDRNN Loss: 0.847
+VAE Params: 1045
+MDRNN Params: 12307
+WM Params: 13352
+WM: 60.377 +- 36.427
+ddir=datasets  data_dir=datasets/mpe  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=True  use_swm=False  vae_dim=15  vae_epochs=3  mdrnn_dim=30  mdrnn_epochs=3  swm_latent_dim=15  swm_hidden_dim=32  swm_epochs=1  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+VAE Loss: 13.828
+MDRNN Loss: 0.855
+VAE Params: 1045
+MDRNN Params: 12307
+WM Params: 13352
+WM: 51.153 +- 32.816
