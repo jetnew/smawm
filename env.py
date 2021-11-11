@@ -132,56 +132,58 @@ class SWM:
         
         
 def evaluate_experiment(config):    
-    world_model = WM(
-        mdir=config.exp_dir,
-        INPUT_DIM=config.input_dim,
-        LATENT_DIM=config.vae_dim,
-        RSIZE=config.mdrnn_dim,
-        GAUSSIANS=5,
-        n_agents=config.n_agents,
-        action_dim=config.action_dim
-    )
+    if config.use_wm:
+        world_model = WM(
+            mdir=config.exp_dir,
+            INPUT_DIM=config.input_dim,
+            LATENT_DIM=config.vae_dim,
+            RSIZE=config.mdrnn_dim,
+            GAUSSIANS=5,
+            n_agents=config.n_agents,
+            action_dim=config.action_dim
+        )
 
-    env = SimpleAdversaryEnv(
-        adversary_policy=follow_agent_closest_to_landmark_policy,
-        agent_policy=follow_non_goal_landmark_policy,
-        world_model=world_model,
-        adversary_eps=config.adversary_eps,
-        agent_eps=config.agent_eps)
+        env = SimpleAdversaryEnv(
+            adversary_policy=follow_agent_closest_to_landmark_policy,
+            agent_policy=follow_non_goal_landmark_policy,
+            world_model=world_model,
+            adversary_eps=config.adversary_eps,
+            agent_eps=config.agent_eps)
 
-    if config.policy == 'ppo':
-        model = PPO("MlpPolicy", env, verbose=0)
-    elif config.policy == 'a2c':
-        model = A2C("MlpPolicy", env, verbose=0)
+        if config.policy == 'ppo':
+            model = PPO("MlpPolicy", env, verbose=0)
+        elif config.policy == 'a2c':
+            model = A2C("MlpPolicy", env, verbose=0)
+        
+        model.learn(total_timesteps=config.train_timesteps)
+        mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=config.eval_episodes)
+        print(f"WM: {mean_reward:.3f} +- {std_reward:.3f}")
     
-    model.learn(total_timesteps=config.train_timesteps)
-    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=config.eval_episodes)
-    print(f"WM: {mean_reward:.3f} +- {std_reward:.3f}")
-    
-    world_model = SWM(
-        mdir=config.exp_dir,
-        embedding_dim=config.swm_latent_dim,
-        hidden_dim=config.swm_hidden_dim,
-        action_dim=config.action_dim,
-        input_shape=config.input_dim,
-        num_objects=config.n_agents
-    )
-    
-    env = SimpleAdversaryEnv(
-        adversary_policy=follow_agent_closest_to_landmark_policy,
-        agent_policy=follow_non_goal_landmark_policy,
-        world_model=world_model,
-        adversary_eps=config.adversary_eps,
-        agent_eps=config.agent_eps)
+    if config.use_swm:
+        world_model = SWM(
+            mdir=config.exp_dir,
+            embedding_dim=config.swm_latent_dim,
+            hidden_dim=config.swm_hidden_dim,
+            action_dim=config.action_dim,
+            input_shape=config.input_dim,
+            num_objects=config.n_agents
+        )
+        
+        env = SimpleAdversaryEnv(
+            adversary_policy=follow_agent_closest_to_landmark_policy,
+            agent_policy=follow_non_goal_landmark_policy,
+            world_model=world_model,
+            adversary_eps=config.adversary_eps,
+            agent_eps=config.agent_eps)
 
-    if config.policy == 'ppo':
-        model = PPO("MlpPolicy", env, verbose=0)
-    elif config.policy == 'a2c':
-        model = A2C("MlpPolicy", env, verbose=0)
-    
-    model.learn(total_timesteps=config.train_timesteps)
-    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=config.eval_episodes)
-    print(f"SWM: {mean_reward:.3f} +- {std_reward:.3f}")
+        if config.policy == 'ppo':
+            model = PPO("MlpPolicy", env, verbose=0)
+        elif config.policy == 'a2c':
+            model = A2C("MlpPolicy", env, verbose=0)
+        
+        model.learn(total_timesteps=config.train_timesteps)
+        mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=config.eval_episodes)
+        print(f"SWM: {mean_reward:.3f} +- {std_reward:.3f}")
 
 
 if __name__ == "__main__":

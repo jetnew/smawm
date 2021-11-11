@@ -64,16 +64,19 @@ def run_experiment(params):
         swm_experiment(config)
     model_summary(config)
     evaluate_experiment(config)
-"""
+
 run_experiment({
     'use_wm': True,
     'vae_epochs': 1,
     'mdrnn_epochs': 1,
     'train_timesteps': 1000,
     'eval_episodes': 1,
+    'use_swm': True,
+    'swm_epochs': 1,
 })
-"""
 
+
+"""
 print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
 run_experiment({
     'use_wm': True,
@@ -88,5 +91,24 @@ run_experiment({
 run_experiment({
     'use_wm': True,
     'use_swm': True,
+    'train_timesteps': 50_000,
+})
+"""
+
+
+print("===== Experiment - Compare WM vs SWM over 3 seeds =====")
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 5,
+    'train_timesteps': 50_000,
+})
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 5,
+    'train_timesteps': 50_000,
+})
+run_experiment({
+    'use_swm': True,
+    'swm_epochs': 5,
     'train_timesteps': 50_000,
 })
