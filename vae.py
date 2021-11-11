@@ -73,7 +73,7 @@ def loss_function(recon_x, x, mu, logsigma):
     return BCE + KLD
     
     
-def train(epoch):
+def train(epoch, model, dataset_train, train_loader, device, optimizer):
     """ One training epoch """
     model.train()
     dataset_train.load_next_buffer()
@@ -86,16 +86,16 @@ def train(epoch):
         loss.backward()
         train_loss += loss.item()
         optimizer.step()
-        if batch_idx % 20 == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader),
-                loss.item() / len(data)))
+        #if batch_idx % 20 == 0:
+        #    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+        #        epoch, batch_idx * len(data), len(train_loader.dataset),
+        #        100. * batch_idx / len(train_loader),
+        #        loss.item() / len(data)))
 
-    print('====> Epoch: {} Average loss: {:.4f}'.format(
-        epoch, train_loss / len(train_loader.dataset)))
+    #print('====> Epoch: {} Average loss: {:.4f}'.format(
+    #    epoch, train_loss / len(train_loader.dataset)))
         
-def test():
+def test(model, dataset_test, test_loader, device, optimizer):
     """ One test epoch """
     model.eval()
     dataset_test.load_next_buffer()
@@ -107,8 +107,55 @@ def test():
             test_loss += loss_function(recon_batch, data, mu, logvar).item()
 
     test_loss /= len(test_loader.dataset)
-    print('====> Test set loss: {:.4f}'.format(test_loss))
+    #print('====> Test set loss: {:.4f}'.format(test_loss))
     return test_loss
+
+
+def vae_experiment(config):
+    cuda = torch.cuda.is_available()
+    #torch.manual_seed(0)
+    torch.backends.cudnn.benchmark = True
+    device = torch.device("cuda" if cuda else "cpu")
+
+    dataset_train = RolloutObservationDataset(config.data_dir, train=True)
+    dataset_test = RolloutObservationDataset(config.data_dir, train=False)
+
+
+    train_loader = torch.utils.data.DataLoader(
+        dataset_train, batch_size=32, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(
+        dataset_test, batch_size=32, shuffle=True)
+        
+
+    model = VAE(config.input_dim, config.vae_dim).to(device)
+    optimizer = optim.Adam(model.parameters())
+
+
+    logdir = config.exp_dir
+    vae_dir = join(getcwd(), logdir, 'vae')
+    if not exists(vae_dir):
+        mkdir(vae_dir)
+
+
+    cur_best = None
+    epochs = config.vae_epochs
+    for epoch in range(1, epochs + 1):
+        train(epoch, model, dataset_train, train_loader, device, optimizer)
+        test_loss = test(model, dataset_test, test_loader, device, optimizer)
+
+        # checkpointing
+        best_filename = join(vae_dir, 'best.tar')
+        filename = join(vae_dir, 'checkpoint.tar')
+        is_best = not cur_best or test_loss < cur_best
+        if is_best:
+            cur_best = test_loss
+
+        save_checkpoint({
+            'epoch': epoch,
+            'state_dict': model.state_dict(),
+            'precision': test_loss,
+            'optimizer': optimizer.state_dict()
+        }, is_best, filename, best_filename)
         
 
 if __name__ == "__main__":
@@ -151,8 +198,8 @@ if __name__ == "__main__":
     cur_best = None
     epochs = 10
     for epoch in range(1, epochs + 1):
-        train(epoch)
-        test_loss = test()
+        train(epoch, model, dataset_train, train_loader, device, optimizer)
+        test_loss = test(model, dataset_test, test_loader, device, optimizer)
 
         # checkpointing
         best_filename = join(vae_dir, 'best.tar')

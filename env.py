@@ -69,7 +69,7 @@ class SimpleAdversaryEnv(gym.Env):
         
         
 class WM:
-    def __init__(self, mdir='exp_dir', INPUT_DIM=10, LATENT_DIM=15, RSIZE=30, GAUSSIANS=5):
+    def __init__(self, mdir='exp_dir', INPUT_DIM=10, LATENT_DIM=15, RSIZE=30, GAUSSIANS=5, n_agents=3, action_dim=5):
         self.RSIZE = RSIZE
         self.device = torch.device('cpu')
         vae_file, rnn_file = \
@@ -79,14 +79,11 @@ class WM:
             torch.load(fname, map_location={'cuda:0': str(self.device)})
             for fname in (vae_file, rnn_file)]
                     
-        for m, s in (('VAE', vae_state), ('MDRNN', rnn_state)):
-            print("Loading {} at epoch {} "
-                  "with test loss {}".format(m, s['epoch'], s['precision']))
                   
         self.vae = VAE(INPUT_DIM, LATENT_DIM).to(self.device)
         self.vae.load_state_dict(vae_state['state_dict'])
 
-        self.mdrnn = MDRNNCell(LATENT_DIM, 15, RSIZE, GAUSSIANS).to(self.device)  # 15 refers to 3 objects * action_dim=5
+        self.mdrnn = MDRNNCell(LATENT_DIM, n_agents*action_dim, RSIZE, GAUSSIANS).to(self.device)  # 15 refers to 3 objects * action_dim=5
         self.mdrnn.load_state_dict(
             {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
             
@@ -105,13 +102,8 @@ class WM:
             
             
 class SWM:
-    def __init__(self, mdir='exp_dir'):
+    def __init__(self, mdir='exp_dir', embedding_dim=15, hidden_dim=32, action_dim=5, input_shape=10, num_objects=3):
         self.device = torch.device('cpu')
-        embedding_dim = 15
-        hidden_dim = 32
-        action_dim = 5
-        input_shape = 10
-        num_objects = 3
         sigma = 0.5
         hinge = 1.0
         ignore_action = False
@@ -129,7 +121,7 @@ class SWM:
             copy_action=copy_action,
             encoder=use_encoder).to(self.device)
             
-        save_folder = "checkpoints"
+        save_folder = os.path.join(mdir, 'swm')
         model_file = os.path.join(save_folder, 'model.pt')
         self.model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
         self.model.eval()
@@ -137,6 +129,59 @@ class SWM:
         obs = torch.from_numpy(obs).unsqueeze(0).to(self.device)
         obs = self.model.forward(obs)
         return torch.flatten(obs, start_dim=1).detach().numpy()
+        
+        
+def evaluate_experiment(config):    
+    world_model = WM(
+        mdir=config.exp_dir,
+        INPUT_DIM=config.input_dim,
+        LATENT_DIM=config.vae_dim,
+        RSIZE=config.mdrnn_dim,
+        GAUSSIANS=5,
+        n_agents=config.n_agents,
+        action_dim=config.action_dim
+    )
+
+    env = SimpleAdversaryEnv(
+        adversary_policy=follow_agent_closest_to_landmark_policy,
+        agent_policy=follow_non_goal_landmark_policy,
+        world_model=world_model,
+        adversary_eps=config.adversary_eps,
+        agent_eps=config.agent_eps)
+
+    if config.policy == 'ppo':
+        model = PPO("MlpPolicy", env, verbose=0)
+    elif config.policy == 'a2c':
+        model = A2C("MlpPolicy", env, verbose=0)
+    
+    model.learn(total_timesteps=config.train_timesteps)
+    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=config.eval_episodes)
+    print(f"WM: {mean_reward:.3f} +- {std_reward:.3f}")
+    
+    world_model = SWM(
+        mdir=config.exp_dir,
+        embedding_dim=config.swm_latent_dim,
+        hidden_dim=config.swm_hidden_dim,
+        action_dim=config.action_dim,
+        input_shape=config.input_dim,
+        num_objects=config.n_agents
+    )
+    
+    env = SimpleAdversaryEnv(
+        adversary_policy=follow_agent_closest_to_landmark_policy,
+        agent_policy=follow_non_goal_landmark_policy,
+        world_model=world_model,
+        adversary_eps=config.adversary_eps,
+        agent_eps=config.agent_eps)
+
+    if config.policy == 'ppo':
+        model = PPO("MlpPolicy", env, verbose=0)
+    elif config.policy == 'a2c':
+        model = A2C("MlpPolicy", env, verbose=0)
+    
+    model.learn(total_timesteps=config.train_timesteps)
+    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=config.eval_episodes)
+    print(f"SWM: {mean_reward:.3f} +- {std_reward:.3f}")
 
 
 if __name__ == "__main__":

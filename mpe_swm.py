@@ -22,7 +22,7 @@ episode_length = 100
 
 replay_buffer = []
 for i in tqdm(range(episodes)):
-    data = np.load(f"datasets/mpe_spurious/episode_{i}.npz", allow_pickle=True)
+    data = np.load(f"datasets/mpe/episode_{i}.npz", allow_pickle=True)
     dataset = {k: np.copy(v).tolist() for k, v in data.items()}
 
     replay_buffer.append({
@@ -35,4 +35,4 @@ for i in tqdm(range(episodes)):
         replay_buffer[i]['action'].append(dataset['actions'][j])
         replay_buffer[i]['next_obs'].append(dataset['observations'][j + 1])
 
-save_list_dict_h5py(replay_buffer, "datasets/mpe_spurious-episodes.h5")
+save_list_dict_h5py(replay_buffer, "datasets/mpe-episodes.h5")

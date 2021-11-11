@@ -13,76 +13,66 @@ import swm
 import os
 
 
-print("===== WM =====")
-mdir = 'exp_dir'
-device = torch.device('cpu')
-INPUT_DIM = 10
-LATENT_DIM = 15
-RSIZE = 30
-GAUSSIANS = 5
+def model_summary(config):
+    device = torch.device('cpu')
+    vae_file, rnn_file= \
+        [join(config.exp_dir, m, 'best.tar') for m in ['vae', 'mdrnn']]
+        
+    vae_state, rnn_state = [
+        torch.load(fname, map_location={'cuda:0': str(device)})
+        for fname in (vae_file, rnn_file)]
+        
+    vae = VAE(config.input_dim, config.vae_dim).to(device)
+    vae.load_state_dict(vae_state['state_dict'])
+
+    mdrnn = MDRNNCell(config.vae_dim, config.n_agents * config.action_dim, config.mdrnn_dim, 5).to(device)
+    mdrnn.load_state_dict(
+        {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
+        
+    vae_params = sum(p.numel() for p in vae.parameters() if p.requires_grad)
+    mdrnn_params = sum(p.numel() for p in mdrnn.parameters() if p.requires_grad)
+        
+    print(f"VAE Loss: {vae_state['precision']:.3f}")
+    print(f"MDRNN Loss: {rnn_state['precision']:.3f}")
+    print("VAE Params:", vae_params)
+    print("MDRNN Params:", mdrnn_params)
+    print("WM Params:", vae_params + mdrnn_params)
 
 
-vae_file, rnn_file, ctrl_file = \
-    [join(mdir, m, 'best.tar') for m in ['vae', 'mdrnn', 'ctrl']]
+    input_shape = config.input_dim
+    embedding_dim = config.swm_latent_dim
+    hidden_dim = config.swm_hidden_dim
+    action_dim = config.action_dim
+    num_objects = config.n_agents
+    sigma = 0.5
+    hinge = 1.0
+    ignore_action = False
+    copy_action = False
+    use_encoder = 'small'
+    model = swm.ContrastiveSWM(
+        embedding_dim=embedding_dim,
+        hidden_dim=hidden_dim,
+        action_dim=action_dim,
+        input_dims=input_shape,
+        num_objects=num_objects,
+        sigma=sigma,
+        hinge=hinge,
+        ignore_action=ignore_action,
+        copy_action=copy_action,
+        encoder=use_encoder).to(device)
     
-vae_state, rnn_state = [
-    torch.load(fname, map_location={'cuda:0': str(device)})
-    for fname in (vae_file, rnn_file)]
-            
-for m, s in (('VAE', vae_state), ('MDRNN', rnn_state)):
-    print("Loading {} at epoch {} "
-          "with test loss {}".format(m, s['epoch'], s['precision']))
-              
-
-vae = VAE(INPUT_DIM, LATENT_DIM).to(device)
-vae.load_state_dict(vae_state['state_dict'])
-
-mdrnn = MDRNNCell(LATENT_DIM, 15, RSIZE, GAUSSIANS).to(device)
-mdrnn.load_state_dict(
-    {k.strip('_l0'): v for k, v in rnn_state['state_dict'].items()})
     
-vae_params = sum(p.numel() for p in vae.parameters() if p.requires_grad)
-mdrnn_params = sum(p.numel() for p in mdrnn.parameters() if p.requires_grad)
-
-print("VAE trainable params:", vae_params, vae)
-print("MDRNN trainable params:", mdrnn_params, mdrnn)
-print("Total trainable params:", vae_params + mdrnn_params)
-
-
-# ====== SWM =====
-print("===== SWM =====")
-from swm_controller import Controller
-mdir = 'exp_dir_swm'
-ctrl_file = join(mdir, 'ctrl', 'best.tar')
-
-embedding_dim = 15
-hidden_dim = 512
-action_dim = 5
-input_shape = 10
-num_objects = 3
-sigma = 0.5
-hinge = 1.0
-ignore_action = False
-copy_action = False
-use_encoder = 'small'
-model = swm.ContrastiveSWM(
-    embedding_dim=embedding_dim,
-    hidden_dim=hidden_dim,
-    action_dim=action_dim,
-    input_dims=input_shape,
-    num_objects=num_objects,
-    sigma=sigma,
-    hinge=hinge,
-    ignore_action=ignore_action,
-    copy_action=copy_action,
-    encoder=use_encoder).to(device)
+    #swm_state = torch.load(join('checkpoints', 'model.pt'), map_location={'cuda:0': str(device)})
+    #print(swm_state.keys())
+    #model.load_state_dict(swm_state['state_dict'])
     
-#save_folder = "checkpoints"
-#model_file = os.path.join(save_folder, 'model.pt')
-#model.load_state_dict(torch.load(model_file, map_location={'cuda:0': 'cpu'}))
-#model.eval()
-
-swm_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-print("SWM trainable params:", swm_params, model)
-print("Total trainable params:", swm_params)
+    mlp = model.obj_encoder
+    gnn = model.transition_model
+    mlp_params = sum(p.numel() for p in mlp.parameters() if p.requires_grad)
+    gnn_params = sum(p.numel() for p in gnn.parameters() if p.requires_grad)
+    swm_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    
+    #print(f"SWM Loss: {swm_state['precision']:.3f}")
+    print("MLP Params:", mlp_params)
+    print("GNN Params:", gnn_params)
+    print("SWM Params:", mlp_params + gnn_params)

@@ -42,17 +42,17 @@ class _RolloutDataset(torch.utils.data.Dataset):
         self._cum_size = [0]
 
         # progress bar
-        pbar = tqdm(total=len(self._buffer_fnames),
-                    bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} {postfix}')
-        pbar.set_description("Loading file buffer ...")
+        #pbar = tqdm(total=len(self._buffer_fnames),
+        #            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} {postfix}')
+        #pbar.set_description("Loading file buffer ...")
 
         for f in self._buffer_fnames:
             with np.load(f, allow_pickle=True) as data:
                 self._buffer += [{k: np.copy(v) for k, v in data.items()}]
                 self._cum_size += [self._cum_size[-1] +
                                    self._data_per_sequence(data['rewards'].shape[0])]
-            pbar.update(1)
-        pbar.close()
+            #pbar.update(1)
+        #pbar.close()
 
     def __len__(self):
         # to have a full sequence, you need self.seq_len + 1 elements, as

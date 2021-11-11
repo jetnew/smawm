@@ -106,7 +106,7 @@ def get_act_fn(act_fn):
         raise ValueError('Invalid argument for `act_fn`.')
 
 
-def to_one_hot(indices, max_index):
+def to_one_hot(indices, max_index, action_dim=5):
     """Get one-hot encoding of index tensors."""
     zeros = torch.zeros(
         indices.size()[0], max_index, dtype=torch.float32,
@@ -457,6 +457,136 @@ class DecoderMLP(nn.Module):
         h = self.fc3(h).sum(1)
         return h.view(-1, self.output_size[0], self.output_size[1],
                       self.output_size[2])
+                      
+                      
+                      
+def swm_experiment(config):
+    
+    cuda = torch.cuda.is_available()
+
+    #np.random.seed(0)
+    #torch.manual_seed(0)
+    #if cuda:
+    #    torch.cuda.manual_seed(0)
+        
+    exp_counter = 0
+    save_folder = os.path.join(config.exp_dir, 'swm')
+
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
+    meta_file = os.path.join(save_folder, 'metadata.pkl')
+    model_file = os.path.join(save_folder, 'model.pt')
+    log_file = os.path.join(save_folder, 'log.txt')
+
+    device = torch.device('cuda' if cuda else 'cpu')
+
+    dataset = os.path.join(config.ddir, 'mpe-episodes.h5')
+    batch_size = 32
+    dataset = StateTransitionsDataset(
+        hdf5_file=dataset)
+    train_loader = data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=True)
+    
+    input_shape = config.input_dim
+    embedding_dim = config.swm_latent_dim
+    hidden_dim = config.swm_hidden_dim
+    action_dim = config.action_dim
+    num_objects = config.n_agents
+    sigma = 0.5
+    hinge = 1.0
+    ignore_action = False
+    copy_action = False
+    use_encoder = 'small'
+    use_decoder = False
+    learning_rate = 5e-4
+    
+    model = ContrastiveSWM(
+        embedding_dim=embedding_dim,
+        hidden_dim=hidden_dim,
+        action_dim=action_dim,
+        input_dims=input_shape,
+        num_objects=num_objects,
+        sigma=sigma,
+        hinge=hinge,
+        ignore_action=ignore_action,
+        copy_action=copy_action,
+        encoder=use_encoder).to(device)
+        
+    model.apply(weights_init)
+
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=learning_rate)
+        
+    decoder = DecoderMLP(
+                input_dim=embedding_dim,
+                num_objects=num_objects,
+                hidden_dim=hidden_dim // 16,
+                output_size=input_shape).to(device)
+
+    decoder.apply(weights_init)
+    optimizer_dec = torch.optim.Adam(
+        decoder.parameters(),
+        lr=learning_rate)
+            
+    # Train model.
+    #print('Starting model training...')
+    step = 0
+    best_loss = 1e9
+    
+    epochs = config.swm_epochs
+    for epoch in range(1, epochs + 1):
+        model.train()
+        train_loss = 0
+
+        for batch_idx, data_batch in enumerate(train_loader):
+            data_batch = [tensor.to(device) for tensor in data_batch]
+            optimizer.zero_grad()
+
+            if use_decoder:
+                optimizer_dec.zero_grad()
+                obs, action, next_obs = data_batch
+                state = model.obj_encoder(obs)
+
+                rec = torch.sigmoid(decoder(state))
+                loss = F.binary_cross_entropy(
+                    rec, obs, reduction='sum') / obs.size(0)
+
+                next_state_pred = state + model.transition_model(state, action)
+                next_rec = torch.sigmoid(decoder(next_state_pred))
+                next_loss = F.binary_cross_entropy(
+                    next_rec, next_obs,
+                    reduction='sum') / obs.size(0)
+                loss += next_loss
+            else:
+                loss = model.contrastive_loss(*data_batch)
+
+            loss.backward()
+            train_loss += loss.item()
+            optimizer.step()
+
+            if use_decoder:
+                optimizer_dec.step()
+
+            log_interval = 20
+            #if batch_idx % log_interval == 0:
+                #print(
+                #    'Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                #        epoch, batch_idx * len(data_batch[0]),
+                #        len(train_loader.dataset),
+                #        100. * batch_idx / len(train_loader),
+                #        loss.item() / len(data_batch[0])))
+
+            step += 1
+
+        avg_loss = train_loss / len(train_loader.dataset)
+        #print('====> Epoch: {} Average loss: {:.6f}'.format(
+        #    epoch, avg_loss))
+
+        if avg_loss < best_loss:
+            best_loss = avg_loss
+            torch.save(model.state_dict(), model_file)
+    print(f"SWM Loss: {best_loss:.3f}")
 
         
 
@@ -487,7 +617,7 @@ if __name__ == "__main__":
     dataset = StateTransitionsDataset(
         hdf5_file=dataset)
     train_loader = data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+        dataset, batch_size=batch_size, shuffle=True)
     
     input_shape = 10
     embedding_dim = 15
@@ -536,7 +666,7 @@ if __name__ == "__main__":
     step = 0
     best_loss = 1e9
     
-    epochs = 3
+    epochs = 1
     for epoch in range(1, epochs + 1):
         model.train()
         train_loss = 0
