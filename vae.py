@@ -40,7 +40,7 @@ class Encoder(nn.Module):
         self.hidden_dim = hidden_dim
         
         self.fc1 = nn.Linear(state_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, latent_dim
+        self.fc2 = nn.Linear(hidden_dim, latent_dim)
         self.fc_mu = nn.Linear(latent_dim, latent_dim)
         self.fc_logsigma = nn.Linear(latent_dim, latent_dim)
 
