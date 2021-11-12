@@ -1,0 +1,2 @@
+===== Experiment - Train WM with 3 epochs =====
+ddir=datasets  data_dir=datasets/mpe  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=True  use_swm=False  vae_dim=15  vae_hdim=32  vae_epochs=3  mdrnn_dim=30  mdrnn_epochs=3  swm_latent_dim=15  swm_hidden_dim=32  swm_epochs=3  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  

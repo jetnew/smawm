@@ -26,19 +26,19 @@ def define_config():
     config.n_agents = 3
     config.action_dim = 5
     config.input_dim = 10
-    config.use_wm = False
+    config.use_wm = True
     config.use_swm = True
     
     # WM
-    config.vae_dim = 15
-    config.vae_epochs = 3
-    config.mdrnn_dim = 30
-    config.mdrnn_epochs = 3
+    config.vae_dim = 5
+    config.vae_epochs = 1
+    config.mdrnn_dim = 10
+    config.mdrnn_epochs = 1
     
     # SWM    
-    config.swm_latent_dim = 15
+    config.swm_latent_dim = 5
     config.swm_hidden_dim = 32
-    config.swm_epochs = 3
+    config.swm_epochs = 1
     
     # Evaluation
     config.exp_dir = 'exp_dir'
@@ -74,7 +74,7 @@ run_experiment({
 })
 """
 
-print("===== Experiment - Train SWM with 1k-length episodes =====")
+print("===== Experiment - Compare WM and SWM with dims=15, 1 epoch =====")
 run_experiment({})
 run_experiment({})
 run_experiment({})

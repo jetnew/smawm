@@ -31,7 +31,7 @@ class SimpleAdversaryEnv(gym.Env):
         self.adversary_eps = adversary_eps
         self.agent_eps = agent_eps
         self.action_space = spaces.Discrete(5)
-        shape = 10 if world_model is None else 45
+        shape = 10 if world_model is None else 15
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(shape,), dtype=np.float16)
         self._env = simple_adversary_v2.parallel_env(N=2, max_cycles=time_limit, continuous_actions=False)
         self.observations = self._env.reset()
