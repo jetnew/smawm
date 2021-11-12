@@ -20,12 +20,14 @@ class Decoder(nn.Module):
         self.state_dim = state_dim
         self.latent_dim = latent_dim
 
-        self.fc1 = nn.Linear(latent_dim, latent_dim)
-        self.fc2 = nn.Linear(latent_dim, state_dim)
+        self.fc1 = nn.Linear(latent_dim, 32)
+        self.fc2 = nn.Linear(32, latent_dim)
+        self.fc3 = nn.Linear(latent_dim, state_dim)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
         return x
 
 class Encoder(nn.Module):
@@ -35,13 +37,15 @@ class Encoder(nn.Module):
         self.state_dim = state_dim
         self.latent_dim = latent_dim
         
-        self.fc1 = nn.Linear(state_dim, latent_dim)
+        self.fc1 = nn.Linear(state_dim, 32)
+        self.fc2 = nn.Linear(32, latent_dim)
         self.fc_mu = nn.Linear(latent_dim, latent_dim)
         self.fc_logsigma = nn.Linear(latent_dim, latent_dim)
 
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
         mu = self.fc_mu(x)
         logsigma = self.fc_logsigma(x)
         return mu, logsigma

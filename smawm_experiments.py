@@ -37,7 +37,7 @@ def define_config():
     
     # SWM    
     config.swm_latent_dim = 5
-    config.swm_hidden_dim = 32
+    config.swm_hidden_dim = 15
     config.swm_epochs = 1
     
     # Evaluation
