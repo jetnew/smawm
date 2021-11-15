@@ -480,7 +480,7 @@ def swm_experiment(config):
 
     device = torch.device('cuda' if cuda else 'cpu')
 
-    dataset = os.path.join(config.ddir, 'mpe-episodes.h5')
+    dataset = os.path.join(config.ddir, 'mpe_spurious-episodes.h5')
     batch_size = 32
     dataset = StateTransitionsDataset(
         hdf5_file=dataset)

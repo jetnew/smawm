@@ -20,7 +20,7 @@ def define_config():
     
     # Experiment
     config.ddir = 'datasets'
-    config.data_dir = config.ddir + '/mpe'
+    config.data_dir = config.ddir + '/mpe_spurious'
     config.exp_dir = 'exp_dir'
     config.input_dim = 10
     config.n_agents = 3
@@ -74,7 +74,7 @@ run_experiment({
 })
 """
 
-print("===== Experiment - Compare WM and SWM with dims=15, 1 epoch =====")
+print("===== Experiment - Compare WM and SWM on spurious dataset =====")
 run_experiment({})
 run_experiment({})
 run_experiment({})

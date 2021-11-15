@@ -1,0 +1,37 @@
+===== Experiment - Compare WM and SWM on spurious dataset =====
+ddir=datasets  data_dir=datasets/mpe_spurious  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=True  use_swm=True  vae_dim=5  vae_epochs=1  mdrnn_dim=10  mdrnn_epochs=1  swm_latent_dim=5  swm_hidden_dim=15  swm_epochs=1  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+SWM Loss: 0.002
+VAE Loss: 20.946
+MDRNN Loss: 1.306
+VAE Params: 994
+MDRNN Params: 1907
+WM Params: 2901
+MLP Params: 675
+GNN Params: 1415
+SWM Params: 2090
+WM: 40.169 +- 19.840
+SWM: 31.201 +- 29.350
+ddir=datasets  data_dir=datasets/mpe_spurious  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=True  use_swm=True  vae_dim=5  vae_epochs=1  mdrnn_dim=10  mdrnn_epochs=1  swm_latent_dim=5  swm_hidden_dim=15  swm_epochs=1  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+SWM Loss: 0.002
+VAE Loss: 16.831
+MDRNN Loss: 1.010
+VAE Params: 994
+MDRNN Params: 1907
+WM Params: 2901
+MLP Params: 675
+GNN Params: 1415
+SWM Params: 2090
+WM: 44.780 +- 26.422
+SWM: 47.290 +- 28.793
+ddir=datasets  data_dir=datasets/mpe_spurious  exp_dir=exp_dir  input_dim=10  n_agents=3  action_dim=5  use_wm=True  use_swm=True  vae_dim=5  vae_epochs=1  mdrnn_dim=10  mdrnn_epochs=1  swm_latent_dim=5  swm_hidden_dim=15  swm_epochs=1  policy=ppo  adversary_eps=0.5  agent_eps=0.5  train_timesteps=50000  eval_episodes=100  
+SWM Loss: 0.002
+VAE Loss: 21.008
+MDRNN Loss: 1.292
+VAE Params: 994
+MDRNN Params: 1907
+WM Params: 2901
+MLP Params: 675
+GNN Params: 1415
+SWM Params: 2090
+WM: 33.381 +- 20.442
+SWM: 48.490 +- 37.059

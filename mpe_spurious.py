@@ -4,7 +4,7 @@ import numpy as np
 from pettingzoo.mpe import simple_adversary_v2
 
 
-def spurious_policy(action, eps=0.8):
+def spurious_policy(action, eps=0.95):
     if random.random() < eps:
         return action
     else:
