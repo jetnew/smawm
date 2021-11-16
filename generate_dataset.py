@@ -3,11 +3,21 @@ generate_dataset.py - Generates either the Random, Spurious or Expert dataset.
 """
 from os import mkdir, getcwd
 from os.path import join, exists
+import h5py
 import random
 import numpy as np
 from pettingzoo.mpe import simple_adversary_v2
 from policies import random_policy, spurious_policy, follow_non_goal_landmark_policy, follow_goal_landmark_policy, follow_agent_closest_to_landmark_policy
 from tqdm import tqdm
+
+
+def save_list_dict_h5py(array_dict, fname):
+    """Save list of dictionaries containing numpy arrays to h5py file."""
+    with h5py.File(fname, 'w') as hf:
+        for i in range(len(array_dict)):
+            grp = hf.create_group(str(i))
+            for key in array_dict[i].keys():
+                grp.create_dataset(key, data=array_dict[i][key])
 
 
 def generate_dataset(
@@ -51,6 +61,7 @@ def generate_dataset(
 
     env = simple_adversary_v2.parallel_env(N=agents, max_cycles=episode_length, continuous_actions=False)
 
+
     for n in tqdm(range(episodes)):
         obs = env.reset()
         s_rollout = []
@@ -80,8 +91,20 @@ def generate_dataset(
                  actions=np.array(a_rollout),
                  dones=np.array(d_rollout))
 
+    replay_buffer = []
+    for n in range(episodes):
+        data = np.load(join(data_dir, f'episode_{n}.npz'), allow_pickle=True)
+        dataset = {k: np.copy(v).tolist() for k, v in data.items()}
+        replay_buffer.append({'obs': [], 'action': [], 'next_obs': []})
+        for i in range(episode_length - 1):
+            replay_buffer[n]['obs'].append(dataset['observations'][i])
+            replay_buffer[n]['action'].append(dataset['actions'][i])
+            replay_buffer[n]['next_obs'].append(dataset['observations'][i + 1])
+
+    save_list_dict_h5py(replay_buffer, join(data_dir, "episodes.h5"))
     env.close()
 
-
 if __name__ == "__main__":
+    generate_dataset(setting="random", episode_length=100)
     generate_dataset(setting="spurious", episode_length=100)
+    generate_dataset(setting="expert", episode_length=100)
