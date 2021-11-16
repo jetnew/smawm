@@ -1,0 +1,87 @@
+"""
+generate_dataset.py - Generates either the Random, Spurious or Expert dataset.
+"""
+from os import mkdir, getcwd
+from os.path import join, exists
+import random
+import numpy as np
+from pettingzoo.mpe import simple_adversary_v2
+from policies import random_policy, spurious_policy, follow_non_goal_landmark_policy, follow_goal_landmark_policy, follow_agent_closest_to_landmark_policy
+from tqdm import tqdm
+
+
+def generate_dataset(
+        setting,
+        data_dir="datasets",
+        episodes=1000,
+        episode_length=100,
+        agents=2,
+):
+    """
+    Generates either the Random, Spurious or Expert dataset.
+    Args:
+        setting: str - Either "random", "spurious" or "expert"
+        data_dir: str - Dataset save folder. Default: "datasets"
+        episodes: int - Number of rounds in dataset. Default: 1000
+        episode_length: int - Number of tuples per episode. Default: 1000
+        agents: int - Number of cooperative agents. Default: 2
+    """
+    data_dir = join(getcwd(), data_dir, setting)
+    if exists(data_dir):
+        print(f"Dataset {data_dir} exists.")
+        return
+    else:
+        print(f"Generating dataset: {data_dir}")
+        mkdir(data_dir)
+
+    if setting == "random":
+        adversary = random_policy
+        agent1 = random_policy
+        agent2 = random_policy
+    elif setting == "spurious":
+        adversary = random_policy
+        agent1 = spurious_policy()
+        agent2 = spurious_policy()
+    elif setting == "expert":
+        adversary = follow_agent_closest_to_landmark_policy
+        agent1 = follow_non_goal_landmark_policy
+        agent2 = follow_goal_landmark_policy
+    else:
+        raise Exception(f"Setting '{setting}' not available!")
+
+    env = simple_adversary_v2.parallel_env(N=agents, max_cycles=episode_length, continuous_actions=False)
+
+    for n in tqdm(range(episodes)):
+        obs = env.reset()
+        s_rollout = []
+        r_rollout = []
+        d_rollout = []
+        a_rollout = []
+
+        for i in range(episode_length):
+            adversary_action = adversary(obs['adversary_0'])
+            agent1_action = agent1(obs['agent_0'])
+            agent2_action = agent2(obs['agent_1'])
+            actions = [adversary_action, agent1_action, agent2_action]
+
+            obs, reward, done, _ = env.step({
+                agent: action for agent, action in (('adversary_0', adversary_action),
+                                                    ('agent_0', agent1_action),
+                                                    ('agent_1', agent2_action))})
+
+            s_rollout.append(obs['agent_1'])
+            r_rollout.append(reward['agent_1'])
+            d_rollout.append(done['agent_1'])
+            a_rollout.append(actions)
+
+        np.savez(join(data_dir, f'episode_{n}'),
+                 observations=np.array(s_rollout),
+                 rewards=np.array(r_rollout),
+                 actions=np.array(a_rollout),
+                 dones=np.array(d_rollout))
+
+    env.close()
+
+
+if __name__ == "__main__":
+    generate_dataset(setting="spurious", episode_length=100)

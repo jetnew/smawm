@@ -70,6 +70,18 @@ def follow_non_goal_landmark_policy(obs, eps=0.5):
     elif d2 == 0:
         return follow(obs, obj=1, eps=0)
     raise Exception("Didn't work as expected")
+
+def follow_goal_landmark_policy(obs, eps=0.5):
+    if random.random() < eps:
+        return random_policy()
+    d1 = distance(obs, obj1=0, obj2=1)
+    d2 = distance(obs, obj1=0, obj2=2)
+    assert d1 == 0 or d2 == 0
+    if d1 == 0:
+        return follow(obs, obj=1, eps=0)
+    elif d2 == 0:
+        return follow(obs, obj=2, eps=0)
+    raise Exception("Didn't work as expected")
     
 def follow_agent_closest_to_landmark_policy(obs, eps=0.5):
     if random.random() < eps:
@@ -82,6 +94,18 @@ def follow_agent_closest_to_landmark_policy(obs, eps=0.5):
         return follow(obs, obj=0, eps=0)
     else:
         return follow(obs, obj=1, eps=0)
+
+class spurious_policy:
+    def __init__(self):
+        self.previous = None
+    def __call__(self, obs):
+        if self.previous is None:
+            return random.randint(0, 4)
+        else:
+            action_space = [0, 1, 2, 3, 4]
+            action_space.remove(self.previous)
+            self.previous = None
+            return random.choice(action_space)
         
 def compute_reward(rewards):
         return sum(rewards) / episodes, statistics.stdev(rewards)
