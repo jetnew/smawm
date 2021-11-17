@@ -25,8 +25,7 @@ def generate_dataset(
         data_dir="datasets",
         episodes=1000,
         episode_length=100,
-        agents=2,
-):
+        agents=2):
     """
     Generates either the Random, Spurious or Expert dataset.
     Args:

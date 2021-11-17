@@ -261,7 +261,6 @@ def mdrnn_experiment(config):
         cum_bce = 0
         cum_mse = 0
 
-        #pbar = tqdm(total=len(loader.dataset), desc="Epoch {}".format(epoch))
         for i, data in enumerate(loader):
             obs, action, reward, done, next_obs = [arr.to(device) for arr in data]
 
@@ -286,12 +285,6 @@ def mdrnn_experiment(config):
             cum_mse += losses['mse'].item() if hasattr(losses['mse'], 'item') else \
                 losses['mse']
 
-            #pbar.set_postfix_str("loss={loss:10.6f} bce={bce:10.6f} "
-            #                     "gmm={gmm:10.6f} mse={mse:10.6f}".format(
-            #                         loss=cum_loss / (i + 1), bce=cum_bce / (i + 1),
-            #                         gmm=cum_gmm / LSIZE / (i + 1), mse=cum_mse / (i + 1)))
-            #pbar.update(BSIZE)
-        #pbar.close()
         return cum_loss * BSIZE / len(loader.dataset)
         
         
