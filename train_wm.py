@@ -24,10 +24,12 @@ def to_one_hot(indices, max_index):
 
 
 class _RolloutDataset(torch.utils.data.Dataset):
-    def __init__(self, root, episodes=1000, buffer_size=200, train=True):
+    def __init__(self, root, buffer_size=200, train=True, episodes=1000):
         self._files = [
             join(root, sd)
-            for sd in listdir(root)]
+            for sd in listdir(root)
+            if sd != "episodes.h5"
+        ]
         if train:
             self._files = self._files[:episodes//5*4]
         else:
@@ -72,7 +74,7 @@ class RolloutSequenceDataset(_RolloutDataset):
         obs_data = obs_data.astype(np.float32)
         obs, next_obs = obs_data[:-1], obs_data[1:]
         action = data['actions'][seq_index + 1:seq_index + self._seq_len + 1]
-        action = to_one_hot(action, 15)  # TODO: Check
+        action = to_one_hot(action, 15)
         action = action.astype(np.float32)
         reward, done = [data[key][seq_index + 1:
                                   seq_index + self._seq_len + 1].astype(np.float32)
@@ -237,7 +239,7 @@ class MDRNNCell(_MDRNNBase):
         sigmas = torch.exp(sigmas)
         pi = out_full[:, 2 * stride:2 * stride + self.n_gaussians]
         pi = pi.view(-1, self.n_gaussians)
-        logpi = f.log_softmax(pi, dim=-1)
+        logpi = F.log_softmax(pi, dim=-1)
         d = out_full[:, -1]
         return mus, sigmas, logpi, d, next_hidden
 
@@ -274,7 +276,6 @@ def data_pass(vae, mdrnn, optimizer, loader, spatial_latent_dim, device, train):
     cum_bce = 0
     for i, data in enumerate(loader):
         obs, action, reward, done, next_obs = [arr.to(device) for arr in data]
-        print(obs.shape)
         latent_obs, latent_next_obs = to_latent(vae, obs, next_obs, spatial_latent_dim)
         if train:
             losses = get_loss(mdrnn, latent_obs, action, reward, done, latent_next_obs, spatial_latent_dim)
@@ -323,6 +324,7 @@ def train_vae(
         if not best or test_loss < best:
             best = test_loss
             torch.save(model, join(model_dir, 'vae.tar'))
+    return best
 
 
 def train_mdrnn(
@@ -348,27 +350,30 @@ def train_mdrnn(
 
     train_loader = DataLoader(
         RolloutSequenceDataset(data_dir, seq_len=32, buffer_size=30),
-        batch_size=16, shuffle=True)
+        batch_size=16, shuffle=True, drop_last=True)
     test_loader = DataLoader(
         RolloutSequenceDataset(data_dir, seq_len=32, train=False, buffer_size=10),
-        batch_size=16)
+        batch_size=16, drop_last=True)
     mdrnn = MDRNN(spatial_latent_dim, temporal_latent_dim, n_gaussians)
     mdrnn.to(device)
     optimizer = torch.optim.RMSprop(mdrnn.parameters(), lr=1e-3, alpha=.9)
     train = partial(data_pass, vae, mdrnn, optimizer, train_loader, spatial_latent_dim, device, train=True)
     test = partial(data_pass, vae, mdrnn, optimizer, test_loader, spatial_latent_dim, device, train=False)
 
-    cur_best = None
+    best = None
     for _ in tqdm(range(epochs)):
         train()
         test_loss = test()
-        if not cur_best or test_loss < cur_best:
+        if not best or test_loss < best:
             cur_best = test_loss
             torch.save(mdrnn, join(model_dir, 'mdrnn.tar'))
+    return best
 
 
 if __name__ == "__main__":
     # train_vae(setting="random", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
     # train_vae(setting="spurious", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
     # train_vae(setting="expert", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
-    train_mdrnn(setting="random", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    mdrnn_loss = train_mdrnn(setting="random", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    mdrnn_loss = train_mdrnn(setting="spurious", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    mdrnn_loss = train_mdrnn(setting="expert", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
