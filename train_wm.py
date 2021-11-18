@@ -324,6 +324,7 @@ def train_vae(
         if not best or test_loss < best:
             best = test_loss
             torch.save(model, join(model_dir, 'vae.tar'))
+    print(f"Trained VAE with loss: {best:.3f}")
     return best
 
 
@@ -365,15 +366,16 @@ def train_mdrnn(
         train()
         test_loss = test()
         if not best or test_loss < best:
-            cur_best = test_loss
+            best = test_loss
             torch.save(mdrnn, join(model_dir, 'mdrnn.tar'))
+    print(f"Trained MDRNN with loss: {best:.3f}")
     return best
 
 
 if __name__ == "__main__":
-    # train_vae(setting="random", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
-    # train_vae(setting="spurious", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
-    # train_vae(setting="expert", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
-    mdrnn_loss = train_mdrnn(setting="random", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
-    mdrnn_loss = train_mdrnn(setting="spurious", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
-    mdrnn_loss = train_mdrnn(setting="expert", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    train_vae(setting="random", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
+    train_vae(setting="spurious", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
+    train_vae(setting="expert", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
+    train_mdrnn(setting="random", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    train_mdrnn(setting="spurious", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    train_mdrnn(setting="expert", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
