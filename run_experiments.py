@@ -78,7 +78,7 @@ if __name__ == "__main__":
         c = define_config()
         c.setting = "spurious"
         log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm2264-swm1150-spurious-0.2.csv", index=False)
+        log.to_csv(f"experiments/wm2264-swm1150-spurious-0.05csv", index=False)
 
     # # ===== WM (2264) vs SWM (1150) (Expert Dataset) =====
     # log = pd.DataFrame()
