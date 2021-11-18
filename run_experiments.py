@@ -73,24 +73,24 @@ if __name__ == "__main__":
             c = define_config()
             c.wm_spatial_latent_dim = wm_spatial_latent_dim
             log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        for wm_temporal_latent_dim in [5,10,15]:
-            c = define_config()
-            c.wm_temporal_latent_dim = wm_temporal_latent_dim
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        for wm_hidden in [5,10,15]:
-            c = define_config()
-            c.wm_hidden = wm_hidden
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        for wm_layers in [1,2]:
-            c = define_config()
-            c.wm_layers = wm_layers
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        for wm_gaussians in [1,2,3]:
-            c = define_config()
-            c.wm_gaussians = wm_gaussians
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        for wm_epochs in [1,2,3]:
-            c = define_config()
-            c.wm_epochs = wm_epochs
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        log.to_csv(f"experiments_i.csv", index=False)
+        # for wm_temporal_latent_dim in [5,10,15]:
+        #     c = define_config()
+        #     c.wm_temporal_latent_dim = wm_temporal_latent_dim
+        #     log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
+        # for wm_hidden in [5,10,15]:
+        #     c = define_config()
+        #     c.wm_hidden = wm_hidden
+        #     log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
+        # for wm_layers in [1,2]:
+        #     c = define_config()
+        #     c.wm_layers = wm_layers
+        #     log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
+        # for wm_gaussians in [1,2,3]:
+        #     c = define_config()
+        #     c.wm_gaussians = wm_gaussians
+        #     log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
+        # for wm_epochs in [1,2,3]:
+        #     c = define_config()
+        #     c.wm_epochs = wm_epochs
+        #     log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
+        log.to_csv(f"experiments/wm_spatial_latent_dim.csv", index=False)

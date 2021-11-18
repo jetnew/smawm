@@ -25,7 +25,8 @@ def generate_dataset(
         data_dir="datasets",
         episodes=1000,
         episode_length=100,
-        agents=2):
+        agents=2,
+        verbose=False):
     """
     Generates either the Random, Spurious or Expert dataset.
     Args:
@@ -34,13 +35,16 @@ def generate_dataset(
         episodes: int - Number of rounds in dataset. Default: 1000
         episode_length: int - Number of tuples per episode. Default: 1000
         agents: int - Number of cooperative agents. Default: 2
+        seed: int - Random seed
     """
     data_dir = join(getcwd(), data_dir, setting)
     if exists(data_dir):
-        print(f"Dataset {data_dir} exists.")
+        if verbose:
+            print(f"Dataset {data_dir} exists.")
         return
     else:
-        print(f"Generating dataset: {data_dir}")
+        if verbose:
+            print(f"Generating dataset: {data_dir}")
         mkdir(data_dir)
 
     if setting == "random":
