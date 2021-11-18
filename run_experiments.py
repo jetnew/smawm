@@ -65,10 +65,25 @@ def run_experiment(c, run_wm=False, run_swm=False):
 
 
 if __name__ == "__main__":
-    log = pd.DataFrame()
+    # # ===== WM (2264) vs SWM (1150) (Random Dataset) =====
+    # log = pd.DataFrame()
+    # for i in tqdm(range(10)):
+    #     c = define_config()
+    #     log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
+    #     log.to_csv(f"experiments/wm2264-swm1150-random.csv", index=False)
 
-    # ===== WM (2264) vs SWM (1150) =====
+    # ===== WM (2264) vs SWM (1150) (Spurious Dataset) =====
+    log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
+        c.setting = "spurious"
         log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm2264-swm1150.csv", index=False)
+        log.to_csv(f"experiments/wm2264-swm1150-spurious.csv", index=False)
+
+    # ===== WM (2264) vs SWM (1150) (Expert Dataset) =====
+    log = pd.DataFrame()
+    for i in tqdm(range(10)):
+        c = define_config()
+        c.setting = "expert"
+        log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/wm2264-swm1150-expert.csv", index=False)
