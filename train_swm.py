@@ -229,7 +229,8 @@ def train_swm(
         n_layers,
         epochs,
         data_dir="datasets",
-        model_dir="models"):
+        model_dir="models",
+        verbose=False):
     cuda = torch.cuda.is_available()
     torch.backends.cudnn.benchmark = True
     device = torch.device("cuda" if cuda else "cpu")
@@ -237,7 +238,8 @@ def train_swm(
     model_dir = join(getcwd(), model_dir, setting)
     if not exists(model_dir):
         mkdir(model_dir)
-    print(f"Training SWM in {model_dir} on: {data_dir}")
+    if verbose:
+        print(f"Training SWM in {model_dir} on: {data_dir}")
 
     dataset = StateTransitionsDataset(hdf5_file=data_dir)
     train_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
@@ -245,7 +247,7 @@ def train_swm(
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 
     best = None
-    for _ in tqdm(range(epochs)):
+    for _ in range(epochs):
         model.train()
         train_loss = 0
         for batch_idx, data_batch in enumerate(train_loader):
@@ -259,8 +261,13 @@ def train_swm(
         if not best or avg_loss < best:
             best = avg_loss
             torch.save(model, join(model_dir, 'swm.tar'))
-    print(f"Trained SWM with loss: {best:.3g}")
-    return best
+    if verbose:
+        print(f"Trained SWM with loss: {best:.3g}")
+
+    return {
+        'swm_loss': best,
+        'swm_params': sum(p.numel() for p in model.parameters() if p.requires_grad)
+    }
 
 
 if __name__ == "__main__":

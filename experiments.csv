@@ -1,0 +1,2 @@
+agent,agent_reward,mdrnn_loss,mdrnn_params,setting,swm_agent_latent_dim,swm_hidden,swm_layers,vae_loss,vae_params,wm_epochs,wm_gaussians,wm_hidden,wm_layers,wm_spatial_latent_dim,wm_temporal_latent_dim
+ppo,17.57369479,1.1667948274051443,744.0,random,5.0,5.0,1.0,15.132274404907227,265.0,1.0,3.0,5.0,1.0,5.0,5.0

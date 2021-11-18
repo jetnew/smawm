@@ -104,6 +104,6 @@ def generate_dataset(
     env.close()
 
 if __name__ == "__main__":
-    generate_dataset(setting="random", episode_length=100)
-    generate_dataset(setting="spurious", episode_length=100)
-    generate_dataset(setting="expert", episode_length=100)
+    generate_dataset(setting="random")
+    generate_dataset(setting="spurious")
+    generate_dataset(setting="expert")

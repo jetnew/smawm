@@ -18,6 +18,8 @@ from train_wm import VAE, MDRNNCell, Encoder, Decoder, MDRNN
 from train_swm import ContrastiveSWM, EncoderMLP, TransitionGNN
 import os
 
+import tools
+
 
 class SimpleAdversaryEnv(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -91,32 +93,38 @@ class WorldModel:
 
 
 def train_rl(
-        wm,
+        world_model,
         setting,
-        rl,
+        agent,
         train_timesteps=50_000,
         eval_episodes=100,
-        model_dir="models"):
-    env = SimpleAdversaryEnv(WorldModel(wm, setting))
-    if rl == "ppo":
+        model_dir="models",
+        verbose=False):
+    env = SimpleAdversaryEnv(WorldModel(world_model, setting))
+    if agent == "ppo":
         model = PPO("MlpPolicy", env, verbose=0)
-    elif rl == "a2c":
+    elif agent == "a2c":
         model = A2C("MlpPolicy", env, verbose=0)
     else:
-        raise Exception(f"Model {rl} not available.")
+        raise Exception(f"Model {agent} not available.")
     model_dir = join(model_dir, setting)
-    print(f"Training {wm}-{rl} at: {model_dir}")
+    if verbose:
+        print(f"Training {world_model}-{agent} at: {model_dir}")
     model.learn(total_timesteps=train_timesteps)
     mean, std = evaluate_policy(model, model.get_env(), n_eval_episodes=eval_episodes)
-    print(f"Saved {wm}-{rl} at {model_dir}: {mean:.4f}")
-    model.save(join(model_dir, f"{wm}-{rl}"))
-    return mean
+    if verbose:
+        print(f"Saved {world_model}-{agent} at {model_dir}: {mean:.4f}")
+    model.save(join(model_dir, f"{world_model}-{agent}"))
+
+    return {
+        'agent_reward': mean
+    }
 
 
 if __name__ == "__main__":
-    train_rl("wm", "random", "ppo")
-    train_rl("swm", "random", "ppo")
-    train_rl("wm", "spurious", "ppo")
-    train_rl("swm", "spurious", "ppo")
-    train_rl("wm", "expert", "ppo")
-    train_rl("swm", "expert", "ppo")
+    train_rl(world_model="wm", setting="random", agent="ppo")
+    train_rl(world_model="swm", setting="random", agent="ppo")
+    train_rl(world_model="wm", setting="spurious", agent="ppo")
+    train_rl(world_model="swm", setting="spurious", agent="ppo")
+    train_rl(world_model="wm", setting="expert", agent="ppo")
+    train_rl(world_model="swm", setting="expert", agent="ppo")

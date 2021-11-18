@@ -14,6 +14,7 @@ from torch.distributions.normal import Normal
 from torch import optim
 from tqdm import tqdm
 from torch.utils.data import DataLoader
+import tools
 
 
 def to_one_hot(indices, max_index):
@@ -301,7 +302,8 @@ def train_vae(
         n_layers,
         epochs,
         data_dir="datasets",
-        model_dir="models"):
+        model_dir="models",
+        verbose=False):
     cuda = torch.cuda.is_available()
     torch.backends.cudnn.benchmark = True
     device = torch.device("cuda" if cuda else "cpu")
@@ -309,7 +311,8 @@ def train_vae(
     model_dir = join(getcwd(), model_dir, setting)
     if not exists(model_dir):
         mkdir(model_dir)
-    print(f"Training VAE in {model_dir} on: {data_dir}")
+    if verbose:
+        print(f"Training VAE in {model_dir} on: {data_dir}")
 
     dataset_train = RolloutObservationDataset(data_dir, train=True)
     dataset_test = RolloutObservationDataset(data_dir, train=False)
@@ -321,14 +324,19 @@ def train_vae(
     optimizer = optim.Adam(model.parameters())
 
     best = None
-    for _ in tqdm(range(1, epochs + 1)):
+    for _ in range(1, epochs + 1):
         train(model, dataset_train, train_loader, device, optimizer)
         test_loss = test(model, dataset_test, test_loader, device)
         if not best or test_loss < best:
             best = test_loss
             torch.save(model, join(model_dir, 'vae.tar'))
-    print(f"Trained VAE with loss: {best:.3f}")
-    return best
+    if verbose:
+        print(f"Trained VAE with loss: {best:.3f}")
+
+    return {
+        'vae_loss': best,
+        'vae_params': sum(p.numel() for p in model.parameters() if p.requires_grad)
+    }
 
 
 def train_mdrnn(
@@ -338,15 +346,16 @@ def train_mdrnn(
         n_gaussians,
         epochs,
         data_dir="datasets",
-        model_dir="models"):
+        model_dir="models",
+        verbose=False):
     cuda = torch.cuda.is_available()
-    torch.backends.cudnn.benchmark = True
     device = torch.device("cuda" if cuda else "cpu")
     data_dir = join(data_dir, setting)
     model_dir = join(getcwd(), model_dir, setting)
     if not exists(model_dir):
         mkdir(model_dir)
-    print(f"Training MDRNN in {model_dir} on: {data_dir}")
+    if verbose:
+        print(f"Training MDRNN in {model_dir} on: {data_dir}")
     vae_file = join(getcwd(), model_dir, "vae.tar")
     if not exists(vae_file):
         raise Exception(f"VAE not found: {vae_file}")
@@ -367,15 +376,20 @@ def train_mdrnn(
     test = partial(data_pass, vae, mdrnn, optimizer, test_loader, spatial_latent_dim, device, train=False)
 
     best = None
-    for _ in tqdm(range(epochs)):
+    for _ in range(epochs):
         train()
         test_loss = test()
         if not best or test_loss < best:
             best = test_loss
             mdrnn_cell.load_state_dict({k.strip('_l0'): v for k, v in mdrnn.state_dict().items()})
             torch.save(mdrnn_cell, join(model_dir, 'mdrnn.tar'))
-    print(f"Trained MDRNN with loss: {best:.3f}")
-    return best
+    if verbose:
+        print(f"Trained MDRNN with loss: {best:.3f}")
+
+    return {
+        'mdrnn_loss': best,
+        'mdrnn_params': sum(p.numel() for p in mdrnn.parameters() if p.requires_grad)
+    }
 
 
 if __name__ == "__main__":
