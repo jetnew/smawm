@@ -303,7 +303,8 @@ def train_vae(
         epochs,
         data_dir="datasets",
         model_dir="models",
-        verbose=False):
+        verbose=False,
+        count_params=False):
     cuda = torch.cuda.is_available()
     torch.backends.cudnn.benchmark = True
     device = torch.device("cuda" if cuda else "cpu")
@@ -322,6 +323,9 @@ def train_vae(
         dataset_test, batch_size=32, shuffle=True)
     model = VAE(latent_dim, n_hidden, n_layers).to(device)
     optimizer = optim.Adam(model.parameters())
+    param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    if count_params:
+        print(f"VAE latent_dim={latent_dim} n_hidden={n_hidden} n_layers={n_layers} param_count={param_count}")
 
     best = None
     for _ in range(1, epochs + 1):
@@ -335,7 +339,7 @@ def train_vae(
 
     return {
         'vae_loss': best,
-        'vae_params': sum(p.numel() for p in model.parameters() if p.requires_grad)
+        'vae_params': param_count
     }
 
 
@@ -347,7 +351,8 @@ def train_mdrnn(
         epochs,
         data_dir="datasets",
         model_dir="models",
-        verbose=False):
+        verbose=False,
+        count_params=False):
     cuda = torch.cuda.is_available()
     device = torch.device("cuda" if cuda else "cpu")
     data_dir = join(data_dir, setting)
@@ -374,6 +379,10 @@ def train_mdrnn(
     optimizer = torch.optim.RMSprop(mdrnn.parameters(), lr=1e-3, alpha=.9)
     train = partial(data_pass, vae, mdrnn, optimizer, train_loader, spatial_latent_dim, device, train=True)
     test = partial(data_pass, vae, mdrnn, optimizer, test_loader, spatial_latent_dim, device, train=False)
+    param_count = sum(p.numel() for p in mdrnn.parameters() if p.requires_grad)
+    if count_params:
+        print(f"MDRNN spatial_latent_dim={spatial_latent_dim} temporal_latent_dim={temporal_latent_dim} n_gaussians={n_gaussians} param_count={param_count}")
+        return
 
     best = None
     for _ in range(epochs):
@@ -393,9 +402,12 @@ def train_mdrnn(
 
 
 if __name__ == "__main__":
-    train_vae(setting="random", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
-    train_vae(setting="spurious", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
-    train_vae(setting="expert", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
-    train_mdrnn(setting="random", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
-    train_mdrnn(setting="spurious", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
-    train_mdrnn(setting="expert", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    # train_vae(setting="random", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
+    # train_vae(setting="spurious", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
+    # train_vae(setting="expert", latent_dim=10, n_hidden=5, n_layers=1, epochs=1)
+    # train_mdrnn(setting="random", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    # train_mdrnn(setting="spurious", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+    # train_mdrnn(setting="expert", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
+
+    train_vae(setting="random", latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)
+    train_mdrnn(setting="random", spatial_latent_dim=5, temporal_latent_dim=10, n_gaussians=3, epochs=1, count_params=True)

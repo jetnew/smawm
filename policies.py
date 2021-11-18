@@ -59,7 +59,7 @@ def follow(obs, obj=3, eps=0.5):
         return random_policy()
     return move_towards(obs[obj*2], obs[obj*2+1])
 
-def follow_non_goal_landmark_policy(obs, eps=0.5):    
+def follow_non_goal_landmark_policy(obs, eps=0.2):
     if random.random() < eps:
         return random_policy()
     d1 = distance(obs, obj1=0, obj2=1)
@@ -71,7 +71,7 @@ def follow_non_goal_landmark_policy(obs, eps=0.5):
         return follow(obs, obj=1, eps=0)
     raise Exception("Didn't work as expected")
 
-def follow_goal_landmark_policy(obs, eps=0.5):
+def follow_goal_landmark_policy(obs, eps=0.2):
     if random.random() < eps:
         return random_policy()
     d1 = distance(obs, obj1=0, obj2=1)
@@ -83,7 +83,7 @@ def follow_goal_landmark_policy(obs, eps=0.5):
         return follow(obs, obj=2, eps=0)
     raise Exception("Didn't work as expected")
     
-def follow_agent_closest_to_landmark_policy(obs, eps=0.5):
+def follow_agent_closest_to_landmark_policy(obs, eps=0.2):
     if random.random() < eps:
         return random_policy()
     dist_a1_l1 = distance(obs, obj1=2, obj2=0)

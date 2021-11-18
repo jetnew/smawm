@@ -12,17 +12,17 @@ def define_config():
     # Dataset config
     c.setting = "random"  # ['random', 'spurious', 'expert']
     # WM config
-    c.wm_spatial_latent_dim = 10  # [5,10,15,20,25,30]
-    c.wm_temporal_latent_dim = 5  # [5,10,15,20,25,30]
-    c.wm_hidden = 5  # [5,10,15,20]
-    c.wm_layers = 1  # [1,2,3]
-    c.wm_gaussians = 3  # [1,3,5]
-    c.wm_epochs = 1  # [1,2,3,4,5]
+    c.wm_spatial_latent_dim = 5
+    c.wm_temporal_latent_dim = 10
+    c.wm_hidden = 10
+    c.wm_layers = 1
+    c.wm_gaussians = 3
+    c.wm_epochs = 1
     # SWM config
-    c.swm_agent_latent_dim = 5  # [5,6,7,8,9,10]
-    c.swm_hidden = 5  # [5,10,15,20]
-    c.swm_layers = 1  # [1,2,3]
-    c.wm_epochs = 1  # [1,2,3,4,5]
+    c.swm_agent_latent_dim = 5
+    c.swm_hidden = 10
+    c.swm_layers = 1
+    c.swm_epochs = 1
     # Agent config
     c.agent = 'ppo'  # ['ppo', 'a2c']
     return c
@@ -67,58 +67,8 @@ def run_experiment(c, run_wm=False, run_swm=False):
 if __name__ == "__main__":
     log = pd.DataFrame()
 
-    # ===== WM Hyperparameter Optimisation =====
-    # for i in tqdm(range(5)):
-    #     for wm_spatial_latent_dim in [5,10,15]:
-    #         c = define_config()
-    #         c.wm_spatial_latent_dim = wm_spatial_latent_dim
-    #         log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/wm_spatial_latent_dim.csv", index=False)
-
-    for i in tqdm(range(5)):
-        for wm_temporal_latent_dim in [5,10,15]:
-            c = define_config()
-            c.wm_temporal_latent_dim = wm_temporal_latent_dim
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm_temporal_latent_dim.csv", index=False)
-
-    for i in tqdm(range(5)):
-        for wm_hidden in [5,10,15]:
-            c = define_config()
-            c.wm_hidden = wm_hidden
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm_hidden.csv", index=False)
-
-    for i in tqdm(range(5)):
-        for wm_layers in [1,2]:
-            c = define_config()
-            c.wm_layers = wm_layers
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm_layers.csv", index=False)
-
-    for i in tqdm(range(5)):
-        for wm_gaussians in [1,2,3]:
-            c = define_config()
-            c.wm_gaussians = wm_gaussians
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm_gaussians.csv", index=False)
-
-    for i in tqdm(range(5)):
-        for wm_epochs in [1,2,3]:
-            c = define_config()
-            c.wm_epochs = wm_epochs
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm_epochs.csv", index=False)
-
-    # ===== SWM Hyperparameter Optimisation =====
-    c.swm_agent_latent_dim = 5  # [5,6,7,8,9,10]
-    c.swm_hidden = 5  # [5,10,15,20]
-    c.swm_layers = 1  # [1,2,3]
-    c.wm_epochs = 1  # [1,2,3,4,5]
-
-    for i in tqdm(range(5)):
-        for swm_agent_latent_dim in [5,7,9]:
-            c = define_config()
-            c.wm_epochs = wm_epochs
-            log = log.append(run_experiment(c, run_wm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm_epochs.csv", index=False)
+    # ===== WM (2264) vs SWM (1150) =====
+    for i in tqdm(range(10)):
+        c = define_config()
+        log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/wm2264-swm1150.csv", index=False)

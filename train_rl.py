@@ -28,8 +28,8 @@ class SimpleAdversaryEnv(gym.Env):
         self.adversary_policy = follow_agent_closest_to_landmark_policy
         self.agent_policy = follow_non_goal_landmark_policy
         self.world_model = world_model
-        self.adversary_eps = 0.5
-        self.agent_eps = 0.5
+        self.adversary_eps = 0.2
+        self.agent_eps = 0.2
         self.action_space = spaces.Discrete(5)
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(self.world_model.latent_dim,), dtype=np.float16)
         self._env = simple_adversary_v2.parallel_env(N=2, max_cycles=100, continuous_actions=False)
@@ -117,7 +117,7 @@ def train_rl(
     model.save(join(model_dir, f"{world_model}-{agent}"))
 
     return {
-        'agent_reward': mean
+        f"{world_model}_agent_reward": mean
     }
 
 

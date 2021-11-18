@@ -230,7 +230,8 @@ def train_swm(
         epochs,
         data_dir="datasets",
         model_dir="models",
-        verbose=False):
+        verbose=False,
+        count_params=False):
     cuda = torch.cuda.is_available()
     torch.backends.cudnn.benchmark = True
     device = torch.device("cuda" if cuda else "cpu")
@@ -245,6 +246,10 @@ def train_swm(
     train_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
     model = ContrastiveSWM(agent_latent_dim, n_hidden, n_layers).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
+    param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    if count_params:
+        print(f"SWM agent_latent_dim={agent_latent_dim} n_hidden={n_hidden} n_layers={n_layers} param_count={param_count}")
+        return
 
     best = None
     for _ in range(epochs):
@@ -271,6 +276,8 @@ def train_swm(
 
 
 if __name__ == "__main__":
-    train_swm(setting="random", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
-    train_swm(setting="spurious", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
-    train_swm(setting="expert", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
+    # train_swm(setting="random", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
+    # train_swm(setting="spurious", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
+    # train_swm(setting="expert", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
+
+    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)
