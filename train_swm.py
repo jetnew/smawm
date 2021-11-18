@@ -69,25 +69,26 @@ class StateTransitionsDataset(data.Dataset):
 
 
 class ContrastiveSWM(nn.Module):
-    def __init__(self, latent_dim, n_hidden, n_layers):
+    def __init__(self, agent_latent_dim, n_hidden, n_layers):
         super(ContrastiveSWM, self).__init__()
-        self.latent_dim = latent_dim
+        self.agent_latent_dim = agent_latent_dim
         self.n_hidden = n_hidden
         self.n_layers = n_layers
         self.action_dim = 5
-        self.num_objects = 3
+        self.num_agents = 3
         self.hinge = 1.
         self.sigma = 0.5
         self.ignore_action = False
         self.copy_action = False
         self.pos_loss = 0
         self.neg_loss = 0
+        self.latent_dim = agent_latent_dim * self.num_agents
         self.obj_encoder = EncoderMLP(
-            latent_dim=latent_dim,
+            agent_latent_dim=agent_latent_dim,
             n_hidden=n_hidden,
             n_layers=n_layers)
         self.transition_model = TransitionGNN(
-            latent_dim=latent_dim,
+            agent_latent_dim=agent_latent_dim,
             n_hidden=n_hidden,
             n_layers=n_layers)
     def energy(self, state, action, next_state, no_trans=False):
@@ -119,29 +120,29 @@ class ContrastiveSWM(nn.Module):
 
 
 class TransitionGNN(torch.nn.Module):
-    def __init__(self, latent_dim, n_hidden, n_layers):
+    def __init__(self, agent_latent_dim, n_hidden, n_layers):
         super(TransitionGNN, self).__init__()
-        self.latent_dim = latent_dim
+        self.agent_latent_dim = agent_latent_dim
         self.n_hidden = n_hidden
         self.n_layers = n_layers
-        self.num_objects = 3
+        self.num_agents = 3
         self.ignore_action = False
         self.copy_action = False
         self.action_dim = 5
-        edge_layers = [nn.Linear(latent_dim * 2, n_hidden), nn.ReLU()]
+        edge_layers = [nn.Linear(agent_latent_dim * 2, n_hidden), nn.ReLU()]
         for _ in range(n_layers):
             edge_layers.append(nn.Linear(n_hidden, n_hidden))
             edge_layers.append(nn.LayerNorm(n_hidden))
             edge_layers.append(nn.ReLU())
         edge_layers.append(nn.Linear(n_hidden, n_hidden))
         self.edge_mlp = nn.Sequential(*edge_layers)
-        node_input_dim = n_hidden + latent_dim + self.action_dim
+        node_input_dim = n_hidden + agent_latent_dim + self.action_dim
         node_layers = [nn.Linear(node_input_dim, n_hidden), nn.ReLU()]
         for _ in range(n_layers):
             node_layers.append(nn.Linear(n_hidden, n_hidden))
             node_layers.append(nn.LayerNorm(n_hidden))
             node_layers.append(nn.ReLU())
-        node_layers.append(nn.Linear(n_hidden, latent_dim))
+        node_layers.append(nn.Linear(n_hidden, agent_latent_dim))
         self.node_mlp = nn.Sequential(*node_layers)
         self.edge_list = None
         self.batch_size = 0
@@ -158,16 +159,16 @@ class TransitionGNN(torch.nn.Module):
         else:
             out = node_attr
         return self.node_mlp(out)
-    def _get_edge_list_fully_connected(self, batch_size, num_objects, cuda):
+    def _get_edge_list_fully_connected(self, batch_size, num_agents, cuda):
         if self.edge_list is None or self.batch_size != batch_size:
             self.batch_size = batch_size
-            adj_full = torch.ones(num_objects, num_objects)
-            adj_full -= torch.eye(num_objects)
+            adj_full = torch.ones(num_agents, num_agents)
+            adj_full -= torch.eye(num_agents)
             self.edge_list = adj_full.nonzero()
             self.edge_list = self.edge_list.repeat(batch_size, 1)
             offset = torch.arange(
-                0, batch_size * num_objects, num_objects).unsqueeze(-1)
-            offset = offset.expand(batch_size, num_objects * (num_objects - 1))
+                0, batch_size * num_agents, num_agents).unsqueeze(-1)
+            offset = offset.expand(batch_size, num_agents * (num_agents - 1))
             offset = offset.contiguous().view(-1)
             self.edge_list += offset.unsqueeze(-1)
             self.edge_list = self.edge_list.transpose(0, 1)
@@ -178,7 +179,7 @@ class TransitionGNN(torch.nn.Module):
         cuda = states.is_cuda
         batch_size = states.size(0)
         num_nodes = states.size(1)
-        node_attr = states.view(-1, self.latent_dim)
+        node_attr = states.view(-1, self.agent_latent_dim)
         edge_attr = None
         edge_index = None
         if num_nodes > 1:
@@ -190,7 +191,7 @@ class TransitionGNN(torch.nn.Module):
         if not self.ignore_action:
             if self.copy_action:
                 action_vec = to_one_hot(
-                    action, self.action_dim).repeat(1, self.num_objects)
+                    action, self.action_dim).repeat(1, self.num_agents)
                 action_vec = action_vec.view(-1, self.action_dim)
             else:
                 action_vec = to_one_hot(
@@ -203,27 +204,27 @@ class TransitionGNN(torch.nn.Module):
 
 
 class EncoderMLP(nn.Module):
-    def __init__(self, latent_dim, n_hidden, n_layers):
+    def __init__(self, agent_latent_dim, n_hidden, n_layers):
         super(EncoderMLP, self).__init__()
-        self.latent_dim = latent_dim
-        self.num_objects = 3
+        self.agent_latent_dim = agent_latent_dim
+        self.num_agents = 3
         self.fc1 = nn.Linear(10, n_hidden)
         self.fcs = nn.ModuleList()
         for _ in range(n_layers):
             self.fcs.append(nn.Linear(n_hidden, n_hidden))
-        self.fc = nn.Linear(n_hidden, self.latent_dim * self.num_objects)
+        self.fc = nn.Linear(n_hidden, self.agent_latent_dim * self.num_agents)
         self.ln = nn.LayerNorm(n_hidden)
         self.act = nn.ReLU()
     def forward(self, x):
         x = self.act(self.fc1(x))
         for layer in self.fcs:
             x = self.act(self.ln(layer(x)))
-        return self.fc(x).view(-1, self.num_objects, self.latent_dim)
+        return self.fc(x).view(-1, self.num_agents, self.agent_latent_dim)
 
 
 def train_swm(
         setting,
-        latent_dim,
+        agent_latent_dim,
         n_hidden,
         n_layers,
         epochs,
@@ -240,7 +241,7 @@ def train_swm(
 
     dataset = StateTransitionsDataset(hdf5_file=data_dir)
     train_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
-    model = ContrastiveSWM(latent_dim, n_hidden, n_layers).to(device)
+    model = ContrastiveSWM(agent_latent_dim, n_hidden, n_layers).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 
     best = None
@@ -263,6 +264,6 @@ def train_swm(
 
 
 if __name__ == "__main__":
-    train_swm(setting="random", latent_dim=10, n_hidden=5, n_layers=0, epochs=1)
-    train_swm(setting="spurious", latent_dim=10, n_hidden=5, n_layers=0, epochs=1)
-    train_swm(setting="expert", latent_dim=10, n_hidden=5, n_layers=0, epochs=1)
+    train_swm(setting="random", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
+    train_swm(setting="spurious", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
+    train_swm(setting="expert", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)

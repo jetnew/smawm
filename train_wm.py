@@ -132,6 +132,9 @@ class Decoder(nn.Module):
 class VAE(nn.Module):
     def __init__(self, latent_dim, n_hidden, n_layers):
         super(VAE, self).__init__()
+        self.latent_dim = latent_dim
+        self.n_hidden = n_hidden
+        self.n_layers = n_layers
         self.encoder = Encoder(latent_dim, n_hidden, n_layers)
         self.decoder = Decoder(latent_dim, n_hidden, n_layers)
     def forward(self, x):
@@ -189,31 +192,31 @@ def gmm_loss(batch, mus, sigmas, logpi, reduce=True):
     return - log_prob
 
 class _MDRNNBase(nn.Module):
-    def __init__(self, spatio_latent_dim, temporal_latent_dim, n_gaussians, action_dim=5, n_agents=3):
+    def __init__(self, spatial_latent_dim, temporal_latent_dim, n_gaussians, action_dim=5, n_agents=3):
         super().__init__()
-        self.spatio_latent_dim = spatio_latent_dim
-        self.temporal_latent_dim = temporal_latent_dim
+        self.spatial_latent_dim = spatial_latent_dim
+        self.latent_dim = temporal_latent_dim
         self.n_gaussians = n_gaussians
         self.action_dim = action_dim * n_agents
         # mu, sigma, pi, dones
-        self.gmm_linear = nn.Linear(temporal_latent_dim, (2 * spatio_latent_dim + 1) * n_gaussians + 1)
+        self.gmm_linear = nn.Linear(temporal_latent_dim, (2 * spatial_latent_dim + 1) * n_gaussians + 1)
     def forward(self, *inputs):
         pass
 
 class MDRNN(_MDRNNBase):
-    def __init__(self, spatio_latent_dim, temporal_latent_dim, n_gaussians, action_dim=5, n_agents=3):
-        super().__init__(spatio_latent_dim, temporal_latent_dim, n_gaussians, action_dim, n_agents)
-        self.rnn = nn.LSTM(spatio_latent_dim + action_dim * n_agents, temporal_latent_dim)
+    def __init__(self, spatial_latent_dim, temporal_latent_dim, n_gaussians, action_dim=5, n_agents=3):
+        super().__init__(spatial_latent_dim, temporal_latent_dim, n_gaussians, action_dim, n_agents)
+        self.rnn = nn.LSTM(spatial_latent_dim + action_dim * n_agents, temporal_latent_dim)
     def forward(self, actions, spatial_latents):
         seq_len, bs = actions.size(0), actions.size(1)
         ins = torch.cat([actions, spatial_latents], dim=-1)
         outs, _ = self.rnn(ins)
         gmm_outs = self.gmm_linear(outs)
-        stride = self.n_gaussians * self.spatio_latent_dim
+        stride = self.n_gaussians * self.spatial_latent_dim
         mus = gmm_outs[:, :, :stride]
-        mus = mus.view(seq_len, bs, self.n_gaussians, self.spatio_latent_dim)
+        mus = mus.view(seq_len, bs, self.n_gaussians, self.spatial_latent_dim)
         sigmas = gmm_outs[:, :, stride:2 * stride]
-        sigmas = sigmas.view(seq_len, bs, self.n_gaussians, self.spatio_latent_dim)
+        sigmas = sigmas.view(seq_len, bs, self.n_gaussians, self.spatial_latent_dim)
         sigmas = torch.exp(sigmas)
         pi = gmm_outs[:, :, 2 * stride: 2 * stride + self.n_gaussians]
         pi = pi.view(seq_len, bs, self.n_gaussians)
@@ -357,6 +360,8 @@ def train_mdrnn(
         batch_size=16, drop_last=True)
     mdrnn = MDRNN(spatial_latent_dim, temporal_latent_dim, n_gaussians)
     mdrnn.to(device)
+    mdrnn_cell = MDRNNCell(spatial_latent_dim, temporal_latent_dim, n_gaussians)
+    mdrnn_cell.to(device)
     optimizer = torch.optim.RMSprop(mdrnn.parameters(), lr=1e-3, alpha=.9)
     train = partial(data_pass, vae, mdrnn, optimizer, train_loader, spatial_latent_dim, device, train=True)
     test = partial(data_pass, vae, mdrnn, optimizer, test_loader, spatial_latent_dim, device, train=False)
@@ -367,7 +372,8 @@ def train_mdrnn(
         test_loss = test()
         if not best or test_loss < best:
             best = test_loss
-            torch.save(mdrnn, join(model_dir, 'mdrnn.tar'))
+            mdrnn_cell.load_state_dict({k.strip('_l0'): v for k, v in mdrnn.state_dict().items()})
+            torch.save(mdrnn_cell, join(model_dir, 'mdrnn.tar'))
     print(f"Trained MDRNN with loss: {best:.3f}")
     return best
 
