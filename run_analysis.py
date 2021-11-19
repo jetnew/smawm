@@ -2,6 +2,8 @@ from generate_dataset import *
 from train_wm import *
 from train_swm import *
 from train_rl import *
+from tools import AttrDict
+import pandas as pd
 
 
 class AnalysePredictionsDataset(data.Dataset):
@@ -23,15 +25,15 @@ class AnalysePredictionsDataset(data.Dataset):
         actions = [self.experience_buffer[ep][f'action_t{t}'][step] for t in range(10)]
         return observations, actions
 
-def prediction_loss(model, observations, actions):
-    state = model.obj_encoder(observations[0])
+def prediction_loss(model, obs, actions):
+    state = model.obj_encoder(obs[0])
     losses = []
     for i in range(10):
-        next_state_pred = state + model.transition_model(state, actions[i])
-        next_obs_pred = model.decoder(next_state_pred)
-        loss = F.mse_loss(next_obs_pred, obs[i+1], reduction='sum') / obs.size(0)
+        state = state + model.transition_model(state, actions[i])
+        obs_pred = model.decoder(state)
+        loss = F.mse_loss(obs_pred, obs[i+1], reduction='sum') / obs[0].size(0)
         losses.append(loss.item())
-    return losses
+    return np.array(losses)
 
 
 def define_config():
@@ -58,51 +60,34 @@ def define_config():
 def analyse_swm(
         setting,
         model_dir="models",
-        data_dir="datasets"
+        data_dir="datasets",
+        analysis_dir="analysis"
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
-    data_dir = join(data_dir, setting, "episodes.h5")
+    data_dir = join(data_dir, setting, "predictions.h5")
+    csv_dir = join(analysis_dir, setting, "predictions-swm.csv")
     swm = torch.load(join(model_dir, setting, "swm.tar")).to(device)
     swm.eval()
 
     dataset = AnalysePredictionsDataset(hdf5_file=data_dir)
     data_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
 
-    loss_1_step = 0
-    loss_5_step = 0
-    loss_10_step = 0
+    losses = np.zeros(10)
     for batch_idx, data_batch in enumerate(data_loader):
-        data_batch = [tensor.to(device) for tensor in data_batch]
-        losses = prediction_loss(swm, *data_batch)
-        loss_1_step += losses[0]
-        loss_5_step += losses[4]
-        loss_10_step += losses[9]
-    loss_1_step = loss_1_step / len(train_loader.dataset)
-    loss_5_step = loss_5_step / len(train_loader.dataset)
-    loss_10_step = loss_10_step / len(train_loader.dataset)
-    print(f"1-Step: {loss_1_step:.3f} 5-Step: {loss_1_step:.3f} 10-Step: {loss_1_step:.3f}")
-    return loss_1_step, loss_5_step, loss_10_step
+        obs, actions = data_batch
+        obs = [tensor.to(device) for tensor in obs]
+        actions = [tensor.to(device) for tensor in actions]
+        loss = prediction_loss(swm, obs, actions)
+        losses += loss
+    losses /= len(data_loader.dataset)
+    print(f"SWM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
+    pd.DataFrame({"Loss": losses}).to_csv(csv_dir, index=False)
+    return
 
 
 if __name__ == "__main__":
     c = define_config()
-    train_vae(
-        setting=c.setting,
-        latent_dim=c.wm_spatial_latent_dim,
-        n_hidden=c.wm_hidden,
-        n_layers=c.wm_layers,
-        epochs=c.wm_epochs)
-    train_mdrnn(
-        setting=c.setting,
-        spatial_latent_dim=c.wm_spatial_latent_dim,
-        temporal_latent_dim=c.wm_temporal_latent_dim,
-        n_gaussians=c.wm_gaussians,
-        epochs=c.wm_epochs)
-    train_swm(
-        setting=c.setting,
-        agent_latent_dim=c.swm_agent_latent_dim,
-        n_hidden=c.swm_hidden,
-        n_layers=c.swm_layers,
-        epochs=c.swm_epochs)
-
+    analyse_swm(setting="random")
+    analyse_swm(setting="spurious")
+    analyse_swm(setting="expert")

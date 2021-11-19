@@ -29,7 +29,7 @@ class _RolloutDataset(torch.utils.data.Dataset):
         self._files = [
             join(root, sd)
             for sd in listdir(root)
-            if sd != "episodes.h5"
+            if sd != "episodes.h5" and sd != "predictions.h5"
         ]
         if train:
             self._files = self._files[:episodes]
