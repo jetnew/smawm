@@ -109,50 +109,12 @@ def generate_dataset(
     for n in range(episodes):
         data = np.load(join(data_dir, f'episode_{n}.npz'), allow_pickle=True)
         dataset = {k: np.copy(v).tolist() for k, v in data.items()}
-        prediction_buffer.append({
-            'obs_t0': [],
-            'action_t0': [],
-            'obs_t1': [],
-            'action_t1': [],
-            'obs_t2': [],
-            'action_t2': [],
-            'obs_t3': [],
-            'action_t3': [],
-            'obs_t4': [],
-            'action_t4': [],
-            'obs_t5': [],
-            'action_t5': [],
-            'obs_t6': [],
-            'action_t6': [],
-            'obs_t7': [],
-            'action_t7': [],
-            'obs_t8': [],
-            'action_t8': [],
-            'obs_t9': [],
-            'action_t9': [],
-            'obs_t10': []
-        })
+        prediction_buffer.append({**{f'obs_t{t}': [] for t in range(11)},
+                                  **{f"action_t{t}": [] for t in range(10)}})
         for i in range(episode_length - 10):
-            prediction_buffer[n]['obs_t0'].append(dataset['observations'][i])
-            prediction_buffer[n]['action_t0'].append(dataset['actions'][i])
-            prediction_buffer[n]['obs_t1'].append(dataset['observations'][i + 1])
-            prediction_buffer[n]['action_t1'].append(dataset['actions'][i + 1])
-            prediction_buffer[n]['obs_t2'].append(dataset['observations'][i + 2])
-            prediction_buffer[n]['action_t2'].append(dataset['actions'][i + 2])
-            prediction_buffer[n]['obs_t3'].append(dataset['observations'][i + 3])
-            prediction_buffer[n]['action_t3'].append(dataset['actions'][i + 3])
-            prediction_buffer[n]['obs_t4'].append(dataset['observations'][i + 4])
-            prediction_buffer[n]['action_t4'].append(dataset['actions'][i + 4])
-            prediction_buffer[n]['obs_t5'].append(dataset['observations'][i + 5])
-            prediction_buffer[n]['action_t5'].append(dataset['actions'][i + 5])
-            prediction_buffer[n]['obs_t6'].append(dataset['observations'][i + 6])
-            prediction_buffer[n]['action_t6'].append(dataset['actions'][i + 6])
-            prediction_buffer[n]['obs_t7'].append(dataset['observations'][i + 7])
-            prediction_buffer[n]['action_t7'].append(dataset['actions'][i + 7])
-            prediction_buffer[n]['obs_t8'].append(dataset['observations'][i + 8])
-            prediction_buffer[n]['action_t8'].append(dataset['actions'][i + 8])
-            prediction_buffer[n]['obs_t9'].append(dataset['observations'][i + 9])
-            prediction_buffer[n]['action_t9'].append(dataset['actions'][i + 9])
+            for t in range(10):
+                prediction_buffer[n][f'obs_t{t}'].append(dataset['observations'][t])
+                prediction_buffer[n][f'action_t{t}'].append(dataset['actions'][t])
             prediction_buffer[n]['obs_t10'].append(dataset['observations'][i + 10])
     save_list_dict_h5py(prediction_buffer, join(data_dir, "predictions.h5"))
 

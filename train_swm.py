@@ -125,14 +125,13 @@ class ContrastiveSWM(nn.Module):
         return loss
     def decoder_loss(self, obs, action, next_obs):
         state = self.obj_encoder(obs)
-        rec = torch.sigmoid(self.decoder(state))
+        rec = self.decoder(state)
         loss = F.mse_loss(rec, obs, reduction='sum') / obs.size(0)
         next_state_pred = state + self.transition_model(state, action)
-        next_rec = torch.sigmoid(self.decoder(next_state_pred))
+        next_rec = self.decoder(next_state_pred)
         next_loss = F.mse_loss(next_rec, next_obs, reduction='sum') / obs.size(0)
         loss += next_loss
         return loss
-
     def forward(self, obs):
         return self.obj_encoder(obs)
 

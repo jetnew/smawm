@@ -19,48 +19,19 @@ class AnalysePredictionsDataset(data.Dataset):
         return self.num_steps
     def __getitem__(self, idx):
         ep, step = self.idx2episode[idx]
-        obs_t0 = to_float(self.experience_buffer[ep]['obs_t0'][step])
-        action_t0 = self.experience_buffer[ep]['action_t0'][step]
-        obs_t1 = to_float(self.experience_buffer[ep]['obs_t1'][step])
-        action_t1 = self.experience_buffer[ep]['action_t1'][step]
-        obs_t2 = to_float(self.experience_buffer[ep]['obs_t2'][step])
-        action_t2 = self.experience_buffer[ep]['action_t2'][step]
-        obs_t3 = to_float(self.experience_buffer[ep]['obs_t3'][step])
-        action_t3 = self.experience_buffer[ep]['action_t3'][step]
-        obs_t4 = to_float(self.experience_buffer[ep]['obs_t4'][step])
-        action_t4 = self.experience_buffer[ep]['action_t4'][step]
-        obs_t5 = to_float(self.experience_buffer[ep]['obs_t5'][step])
-        action_t5 = self.experience_buffer[ep]['action_t5'][step]
-        obs_t6 = to_float(self.experience_buffer[ep]['obs_t6'][step])
-        action_t6 = self.experience_buffer[ep]['action_t6'][step]
-        obs_t7 = to_float(self.experience_buffer[ep]['obs_t7'][step])
-        action_t7 = self.experience_buffer[ep]['action_t7'][step]
-        obs_t8 = to_float(self.experience_buffer[ep]['obs_t8'][step])
-        action_t8 = self.experience_buffer[ep]['action_t8'][step]
-        obs_t9 = to_float(self.experience_buffer[ep]['obs_t9'][step])
-        action_t9 = self.experience_buffer[ep]['action_t9'][step]
-        obs_t10 = to_float(self.experience_buffer[ep]['obs_t10'][step])
-        return (obs_t0,
-                action_t0,
-                obs_t1,
-                action_t1,
-                obs_t2,
-                action_t2,
-                obs_t3,
-                action_t3,
-                obs_t4,
-                action_t4,
-                obs_t5,
-                action_t5,
-                obs_t6,
-                action_t6,
-                obs_t7,
-                action_t7,
-                obs_t8,
-                action_t8,
-                obs_t9,
-                action_t9,
-                obs_t10)
+        observations = [to_float(self.experience_buffer[ep][f'obs_t{t}'][step]) for t in range(11)]
+        actions = [self.experience_buffer[ep][f'action_t{t}'][step] for t in range(10)]
+        return observations, actions
+
+def prediction_loss(model, observations, actions):
+    state = model.obj_encoder(observations[0])
+    losses = []
+    for i in range(10):
+        next_state_pred = state + model.transition_model(state, actions[i])
+        next_obs_pred = model.decoder(next_state_pred)
+        loss = F.mse_loss(next_obs_pred, obs[i+1], reduction='sum') / obs.size(0)
+        losses.append(loss.item())
+    return losses
 
 
 def define_config():
@@ -95,16 +66,23 @@ def analyse_swm(
     swm = torch.load(join(model_dir, setting, "swm.tar")).to(device)
     swm.eval()
 
-    dataset = StateTransitionsDataset(hdf5_file=data_dir)
-    train_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
-    model = ContrastiveSWM(agent_latent_dim, n_hidden, n_layers).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
-    param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    dataset = AnalysePredictionsDataset(hdf5_file=data_dir)
+    data_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
 
-    train_loss = 0
-    for batch_idx, data_batch in enumerate(train_loader):
+    loss_1_step = 0
+    loss_5_step = 0
+    loss_10_step = 0
+    for batch_idx, data_batch in enumerate(data_loader):
         data_batch = [tensor.to(device) for tensor in data_batch]
-    avg_loss = train_loss / len(train_loader.dataset)
+        losses = prediction_loss(swm, *data_batch)
+        loss_1_step += losses[0]
+        loss_5_step += losses[4]
+        loss_10_step += losses[9]
+    loss_1_step = loss_1_step / len(train_loader.dataset)
+    loss_5_step = loss_5_step / len(train_loader.dataset)
+    loss_10_step = loss_10_step / len(train_loader.dataset)
+    print(f"1-Step: {loss_1_step:.3f} 5-Step: {loss_1_step:.3f} 10-Step: {loss_1_step:.3f}")
+    return loss_1_step, loss_5_step, loss_10_step
 
 
 if __name__ == "__main__":
