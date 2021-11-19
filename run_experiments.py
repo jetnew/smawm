@@ -70,7 +70,7 @@ if __name__ == "__main__":
         log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
         log.to_csv(f"experiments/wm2434-swm1590-random.csv", index=False)
 
-    # ===== WM (2434) vs C-SWM (1590) (Spurious Dataset) =====
+    # ===== WM (2434) vs SWM (1590) (Spurious Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
         log.to_csv(f"experiments/wm2434-swm1590-spurious.csv", index=False)
 
-    # ===== WM (2434) vs C-SWM (1590) (Expert Dataset) =====
+    # ===== WM (2434) vs SWM (1590) (Expert Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()

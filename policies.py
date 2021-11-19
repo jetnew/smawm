@@ -96,13 +96,14 @@ def follow_agent_closest_to_landmark_policy(obs, eps=0.2):
         return follow(obs, obj=1, eps=0)
 
 class spurious_policy:
-    def __init__(self):
+    def __init__(self, eps=0.05):
         self.previous = None
-    def __call__(self, obs, eps=0.05):
+        self.eps = eps
+    def __call__(self, obs):
         if self.previous is None:
             return random.randint(0, 4)
         else:
-            if random.random() < eps:
+            if random.random() < self.eps:
                 return random.randint(0, 4)
             action_space = [0, 1, 2, 3, 4]
             action_space.remove(self.previous)
