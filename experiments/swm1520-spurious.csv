@@ -1,0 +1,6 @@
+agent,setting,swm_agent_latent_dim,swm_agent_reward,swm_epochs,swm_hidden,swm_layers,swm_loss,swm_params,wm_epochs,wm_gaussians,wm_hidden,wm_layers,wm_spatial_latent_dim,wm_temporal_latent_dim
+ppo,spurious,10.0,38.33842257,1.0,10.0,1.0,0.0026518168284115616,1520.0,1.0,3.0,10.0,1.0,5.0,10.0
+ppo,spurious,10.0,33.78769842,1.0,10.0,1.0,0.002484379606067457,1520.0,1.0,3.0,10.0,1.0,5.0,10.0
+ppo,spurious,10.0,41.76702854,1.0,10.0,1.0,0.002451615288359762,1520.0,1.0,3.0,10.0,1.0,5.0,10.0
+ppo,spurious,10.0,44.09032780999999,1.0,10.0,1.0,0.0033966327077577436,1520.0,1.0,3.0,10.0,1.0,5.0,10.0
+ppo,spurious,10.0,42.66322419,1.0,10.0,1.0,0.0021835579253272203,1520.0,1.0,3.0,10.0,1.0,5.0,10.0

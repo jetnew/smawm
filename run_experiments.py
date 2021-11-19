@@ -106,11 +106,38 @@ if __name__ == "__main__":
     #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
     #     log.to_csv(f"experiments/swm2090-spurious.csv", index=False)
 
-    # ===== SWM (2090) (Expert Dataset) =====
+    # # ===== SWM (2090) (Expert Dataset) =====
+    # log = pd.DataFrame()
+    # for i in tqdm(range(10)):
+    #     c = define_config()
+    #     c.swm_hidden = 15
+    #     c.setting = "expert"
+    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
+    #     log.to_csv(f"experiments/swm2090-expert.csv", index=False)
+
+    # ===== SWM (1520) (Random Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
-        c.swm_hidden = 15
+        c.swm_agent_latent_dim = 10
+        c.setting = "random"
+        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm1520-random.csv", index=False)
+
+    # ===== SWM (1520) (Spurious Dataset) =====
+    log = pd.DataFrame()
+    for i in tqdm(range(10)):
+        c = define_config()
+        c.swm_agent_latent_dim = 10
+        c.setting = "spurious"
+        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm1520-spurious.csv", index=False)
+
+    # ===== SWM (1520) (Expert Dataset) =====
+    log = pd.DataFrame()
+    for i in tqdm(range(10)):
+        c = define_config()
+        c.swm_agent_latent_dim = 10
         c.setting = "expert"
         log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/swm2090-expert.csv", index=False)
+        log.to_csv(f"experiments/swm1520-expert.csv", index=False)
