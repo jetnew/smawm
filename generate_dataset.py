@@ -103,7 +103,6 @@ def generate_dataset(
             replay_buffer[n]['obs'].append(dataset['observations'][i])
             replay_buffer[n]['action'].append(dataset['actions'][i])
             replay_buffer[n]['next_obs'].append(dataset['observations'][i + 1])
-
     save_list_dict_h5py(replay_buffer, join(data_dir, "episodes.h5"))
     env.close()
 

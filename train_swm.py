@@ -128,10 +128,10 @@ class ContrastiveSWM(nn.Module):
     def decoder_loss(self, obs, action, next_obs):
         state = self.obj_encoder(obs)
         rec = torch.sigmoid(self.decoder(state))
-        loss = F.binary_cross_entropy(rec, obs, reduction='sum') / obs.size(0)
+        loss = F.mse_loss(rec, obs, reduction='sum') / obs.size(0)
         next_state_pred = state + self.transition_model(state, action)
         next_rec = torch.sigmoid(self.decoder(next_state_pred))
-        next_loss = F.binary_cross_entropy(next_rec, next_obs, reduction='sum') / obs.size(0)
+        next_loss = F.mse_loss(next_rec, next_obs, reduction='sum') / obs.size(0)
         loss += next_loss
         return loss
 
@@ -296,7 +296,6 @@ def train_swm(
         for batch_idx, data_batch in enumerate(train_loader):
             data_batch = [tensor.to(device) for tensor in data_batch]
             optimizer.zero_grad()
-            # loss = model.contrastive_loss(*data_batch)
             loss = model.decoder_loss(*data_batch)
             loss.backward()
             train_loss += loss.item()
@@ -325,3 +324,4 @@ if __name__ == "__main__":
 
     train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1550
     train_swm(setting="random", agent_latent_dim=10, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 2070
+    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=2, epochs=1, count_params=True)  # 2070
