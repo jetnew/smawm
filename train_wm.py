@@ -11,6 +11,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data
 from torch.distributions.normal import Normal
+from torch.distributions.categorical import Categorical
+from torch.distributions.independent import Independent
+from torch.distributions.mixture_same_family import MixtureSameFamily
 from torch import optim
 from tqdm import tqdm
 from torch.utils.data import DataLoader
