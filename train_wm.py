@@ -32,7 +32,7 @@ class _RolloutDataset(torch.utils.data.Dataset):
             if sd != "episodes.h5"
         ]
         if train:
-            self._files = self._files[:episodes//5*4]
+            self._files = self._files[:episodes]
         else:
             self._files = self._files[episodes//5*4:]
         self._cum_size = None
@@ -94,50 +94,45 @@ class RolloutObservationDataset(_RolloutDataset):
 
 
 class Encoder(nn.Module):
-    def __init__(self, latent_dim, n_hidden, n_layers):
+    def __init__(self, latent_dim, n_hidden):
         super(Encoder, self).__init__()
         self.latent_dim = latent_dim
         self.n_hidden = n_hidden
-        self.n_layers = n_layers
         self.fc1 = nn.Linear(10, n_hidden)
-        self.fcs = nn.ModuleList()
-        for _ in range(n_layers):
-            self.fcs.append(nn.Linear(n_hidden, n_hidden))
+        self.ln1 = nn.Linear(n_hidden, n_hidden)
+        self.fc2 = nn.Linear(n_hidden, n_hidden)
+        self.ln2 = nn.LayerNorm(n_hidden)
         self.mu = nn.Linear(n_hidden, latent_dim)
         self.logsigma = nn.Linear(n_hidden, latent_dim)
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        for layer in self.fcs:
-            x = F.relu(layer(x))
+        x = F.relu(self.ln1(self.fc1(x)))
+        x = F.relu(self.ln2(self.fc2(x)))
         return self.mu(x), self.logsigma(x)
 
 
 class Decoder(nn.Module):
-    def __init__(self, latent_dim, n_hidden, n_layers):
+    def __init__(self, latent_dim, n_hidden):
         super(Decoder, self).__init__()
         self.latent_dim = latent_dim
         self.n_hidden = n_hidden
-        self.n_layers = n_layers
         self.fc1 = nn.Linear(latent_dim, n_hidden)
-        self.fcs = nn.ModuleList()
-        for _ in range(n_layers):
-            self.fcs.append(nn.Linear(n_hidden, n_hidden))
-        self.fc = nn.Linear(n_hidden, 10)
+        self.ln1 = nn.LayerNorm(n_hidden)
+        self.fc2 = nn.Linear(n_hidden, n_hidden)
+        self.ln2 = nn.LayerNorm(n_hidden)
+        self.fc3 = nn.Linear(n_hidden, 10)
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        for layer in self.fcs:
-            x = F.relu(layer(x))
-        return self.fc(x)
+        x = F.relu(self.ln1(self.fc1(x)))
+        x = F.relu(self.ln2(self.fc2(x)))
+        return self.fc3(x)
 
 
 class VAE(nn.Module):
-    def __init__(self, latent_dim, n_hidden, n_layers):
+    def __init__(self, latent_dim, n_hidden):
         super(VAE, self).__init__()
         self.latent_dim = latent_dim
         self.n_hidden = n_hidden
-        self.n_layers = n_layers
-        self.encoder = Encoder(latent_dim, n_hidden, n_layers)
-        self.decoder = Decoder(latent_dim, n_hidden, n_layers)
+        self.encoder = Encoder(latent_dim, n_hidden)
+        self.decoder = Decoder(latent_dim, n_hidden)
     def forward(self, x):
         mu, logsigma = self.encoder(x)
         sigma = logsigma.exp()
@@ -299,7 +294,6 @@ def train_vae(
         setting,
         latent_dim,
         n_hidden,
-        n_layers,
         epochs,
         data_dir="datasets",
         model_dir="models",
@@ -316,23 +310,25 @@ def train_vae(
         print(f"Training VAE in {model_dir} on: {data_dir}")
 
     dataset_train = RolloutObservationDataset(data_dir, train=True)
-    dataset_test = RolloutObservationDataset(data_dir, train=False)
+    # dataset_test = RolloutObservationDataset(data_dir, train=False)
     train_loader = torch.utils.data.DataLoader(
         dataset_train, batch_size=32, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(
-        dataset_test, batch_size=32, shuffle=True)
-    model = VAE(latent_dim, n_hidden, n_layers).to(device)
+    # test_loader = torch.utils.data.DataLoader(
+    #     dataset_test, batch_size=32, shuffle=True)
+    model = VAE(latent_dim, n_hidden).to(device)
     optimizer = optim.Adam(model.parameters())
     param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
     if count_params:
-        print(f"VAE latent_dim={latent_dim} n_hidden={n_hidden} n_layers={n_layers} param_count={param_count}")
+        print(f"VAE latent_dim={latent_dim} n_hidden={n_hidden} param_count={param_count}")
+        print(model)
+        return
 
     best = None
     for _ in range(1, epochs + 1):
-        train(model, dataset_train, train_loader, device, optimizer)
-        test_loss = test(model, dataset_test, test_loader, device)
-        if not best or test_loss < best:
-            best = test_loss
+        loss = train(model, dataset_train, train_loader, device, optimizer)
+        # test_loss = test(model, dataset_test, test_loader, device)
+        if not best or loss < best:
+            best = loss
             torch.save(model, join(model_dir, 'vae.tar'))
     if verbose:
         print(f"Trained VAE with loss: {best:.3f}")
@@ -369,27 +365,28 @@ def train_mdrnn(
     train_loader = DataLoader(
         RolloutSequenceDataset(data_dir, seq_len=32, buffer_size=30),
         batch_size=16, shuffle=True, drop_last=True)
-    test_loader = DataLoader(
-        RolloutSequenceDataset(data_dir, seq_len=32, train=False, buffer_size=10),
-        batch_size=16, drop_last=True)
+    # test_loader = DataLoader(
+    #     RolloutSequenceDataset(data_dir, seq_len=32, train=False, buffer_size=10),
+    #     batch_size=16, drop_last=True)
     mdrnn = MDRNN(spatial_latent_dim, temporal_latent_dim, n_gaussians)
     mdrnn.to(device)
     mdrnn_cell = MDRNNCell(spatial_latent_dim, temporal_latent_dim, n_gaussians)
     mdrnn_cell.to(device)
     optimizer = torch.optim.RMSprop(mdrnn.parameters(), lr=1e-3, alpha=.9)
     train = partial(data_pass, vae, mdrnn, optimizer, train_loader, spatial_latent_dim, device, train=True)
-    test = partial(data_pass, vae, mdrnn, optimizer, test_loader, spatial_latent_dim, device, train=False)
+    # test = partial(data_pass, vae, mdrnn, optimizer, test_loader, spatial_latent_dim, device, train=False)
     param_count = sum(p.numel() for p in mdrnn.parameters() if p.requires_grad)
     if count_params:
         print(f"MDRNN spatial_latent_dim={spatial_latent_dim} temporal_latent_dim={temporal_latent_dim} n_gaussians={n_gaussians} param_count={param_count}")
+        print(mdrnn)
         return
 
     best = None
     for _ in range(epochs):
-        train()
-        test_loss = test()
-        if not best or test_loss < best:
-            best = test_loss
+        loss = train()
+        # test_loss = test()
+        if not best or loss < best:
+            best = loss
             mdrnn_cell.load_state_dict({k.strip('_l0'): v for k, v in mdrnn.state_dict().items()})
             torch.save(mdrnn_cell, join(model_dir, 'mdrnn.tar'))
     if verbose:
@@ -409,5 +406,7 @@ if __name__ == "__main__":
     # train_mdrnn(setting="spurious", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
     # train_mdrnn(setting="expert", spatial_latent_dim=10, temporal_latent_dim=5, n_gaussians=3, epochs=1)
 
-    train_vae(setting="random", latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)
-    train_mdrnn(setting="random", spatial_latent_dim=5, temporal_latent_dim=10, n_gaussians=3, epochs=1, count_params=True)
+    # Total params: 2434
+    train_vae(setting="random", latent_dim=5, n_hidden=10, epochs=1, count_params=True)  # 780
+    train_mdrnn(setting="random", spatial_latent_dim=5, temporal_latent_dim=10, n_gaussians=3, epochs=1, count_params=True)  # 1654
+

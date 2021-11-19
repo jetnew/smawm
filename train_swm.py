@@ -91,16 +91,14 @@ class ContrastiveSWM(nn.Module):
         self.latent_dim = agent_latent_dim * self.num_agents
         self.obj_encoder = EncoderMLP(
             agent_latent_dim=agent_latent_dim,
-            n_hidden=n_hidden,
-            n_layers=n_layers)
+            n_hidden=n_hidden)
         self.transition_model = TransitionGNN(
             agent_latent_dim=agent_latent_dim,
             n_hidden=n_hidden,
             n_layers=n_layers)
         self.decoder = DecoderMLP(
             agent_latent_dim=agent_latent_dim,
-            n_hidden=n_hidden,
-            n_layers=n_layers)
+            n_hidden=n_hidden)
     def energy(self, state, action, next_state, no_trans=False):
         norm = 0.5 / (self.sigma ** 2)
         if no_trans:
@@ -224,40 +222,36 @@ class TransitionGNN(torch.nn.Module):
 
 
 class EncoderMLP(nn.Module):
-    def __init__(self, agent_latent_dim, n_hidden, n_layers):
+    def __init__(self, agent_latent_dim, n_hidden):
         super(EncoderMLP, self).__init__()
         self.agent_latent_dim = agent_latent_dim
         self.num_agents = 3
         self.fc1 = nn.Linear(10, n_hidden)
-        self.fcs = nn.ModuleList()
-        for _ in range(n_layers):
-            self.fcs.append(nn.Linear(n_hidden, n_hidden))
-        self.fc = nn.Linear(n_hidden, self.agent_latent_dim * self.num_agents)
-        self.ln = nn.LayerNorm(n_hidden)
+        self.ln1 = nn.LayerNorm(n_hidden)
+        self.fc2 = nn.Linear(n_hidden, n_hidden)
+        self.ln2 = nn.LayerNorm(n_hidden)
+        self.fc3 = nn.Linear(n_hidden, self.agent_latent_dim * self.num_agents)
         self.act = nn.ReLU()
     def forward(self, x):
-        x = self.act(self.fc1(x))
-        for layer in self.fcs:
-            x = self.act(self.ln(layer(x)))
-        return self.fc(x).view(-1, self.num_agents, self.agent_latent_dim)
+        x = self.act(self.ln1(self.fc1(x)))
+        x = self.act(self.ln2(self.fc2(x)))
+        return self.fc3(x).view(-1, self.num_agents, self.agent_latent_dim)
 
 class DecoderMLP(nn.Module):
-    def __init__(self, agent_latent_dim, n_hidden, n_layers):
+    def __init__(self, agent_latent_dim, n_hidden):
         super(DecoderMLP, self).__init__()
         self.agent_latent_dim = agent_latent_dim
         self.num_agents = 3
         self.fc1 = nn.Linear(agent_latent_dim * self.num_agents, n_hidden)
-        self.fcs = nn.ModuleList()
-        for _ in range(n_layers):
-            self.fcs.append(nn.Linear(n_hidden, n_hidden))
-        self.fc = nn.Linear(n_hidden, 10)
-        self.ln = nn.LayerNorm(n_hidden)
+        self.ln1 = nn.LayerNorm(n_hidden)
+        self.fc2 = nn.Linear(n_hidden, n_hidden)
+        self.ln2 = nn.LayerNorm(n_hidden)
+        self.fc3 = nn.Linear(n_hidden, 10)
         self.act = nn.ReLU()
     def forward(self, x):
-        x = self.act(self.fc1(x.view(-1, self.agent_latent_dim  *self.num_agents)))
-        for layer in self.fcs:
-            x = self.act(self.ln(layer(x)))
-        return self.fc(x).view(-1, 10)
+        x = self.act(self.ln1(self.fc1(x.view(-1, self.agent_latent_dim * self.num_agents))))
+        x = self.act(self.ln2(self.fc2(x)))
+        return self.fc3(x).view(-1, 10)
 
 
 def train_swm(
@@ -287,6 +281,7 @@ def train_swm(
     param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
     if count_params:
         print(f"SWM agent_latent_dim={agent_latent_dim} n_hidden={n_hidden} n_layers={n_layers} param_count={param_count}")
+        print(model)
         return
 
     best = None
@@ -322,6 +317,6 @@ if __name__ == "__main__":
     # train_swm(setting="random", agent_latent_dim=5, n_hidden=15, n_layers=1, epochs=1, count_params=True)  # 2090
     # train_swm(setting="random", agent_latent_dim=10, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1520
 
-    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1550
-    train_swm(setting="random", agent_latent_dim=10, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 2070
-    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=2, epochs=1, count_params=True)  # 2070
+    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1590
+    train_swm(setting="random", agent_latent_dim=10, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 2110
+    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=2, epochs=1, count_params=True)  # 1850

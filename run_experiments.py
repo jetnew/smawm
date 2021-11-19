@@ -15,7 +15,6 @@ def define_config():
     c.wm_spatial_latent_dim = 5
     c.wm_temporal_latent_dim = 10
     c.wm_hidden = 10
-    c.wm_layers = 1
     c.wm_gaussians = 3
     c.wm_epochs = 1
     # SWM config
@@ -36,7 +35,6 @@ def run_experiment(c, run_wm=False, run_swm=False):
             setting=c.setting,
             latent_dim=c.wm_spatial_latent_dim,
             n_hidden=c.wm_hidden,
-            n_layers=c.wm_layers,
             epochs=c.wm_epochs)
         mdrnn_log = train_mdrnn(
             setting=c.setting,
@@ -65,133 +63,77 @@ def run_experiment(c, run_wm=False, run_swm=False):
 
 
 if __name__ == "__main__":
-    # # ===== WM (2264) vs C-SWM (1150) (Random Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/wm2264-swm1150-random.csv", index=False)
-
-    # ===== WM (2264) vs C-SWM (1150) (Spurious Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.setting = "spurious"
-    #     log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/wm2264-swm1150-spurious.csv", index=False)
-
-    # # ===== WM (2264) vs C-SWM (1150) (Expert Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.setting = "expert"
-    #     log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/wm2264-swm1150-expert.csv", index=False)
-    #
-    # # ===== C-SWM (2090) (Random Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.swm_hidden = 15
-    #     c.setting = "random"
-    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/swm2090-random.csv", index=False)
-    #
-    # # ===== C-SWM (2090) (Spurious Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.swm_hidden = 15
-    #     c.setting = "spurious"
-    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/swm2090-spurious.csv", index=False)
-
-    # # ===== C-SWM (2090) (Expert Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.swm_hidden = 15
-    #     c.setting = "expert"
-    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/swm2090-expert.csv", index=False)
-
-    # # ===== C-SWM (1520) (Random Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.swm_agent_latent_dim = 10
-    #     c.setting = "random"
-    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/swm1520-random.csv", index=False)
-
-    # # ===== C-SWM (1520) (Spurious Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.swm_agent_latent_dim = 10
-    #     c.setting = "spurious"
-    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/swm1520-spurious.csv", index=False)
-    #
-    # # ===== C-SWM (1520) (Expert Dataset) =====
-    # log = pd.DataFrame()
-    # for i in tqdm(range(10)):
-    #     c = define_config()
-    #     c.swm_agent_latent_dim = 10
-    #     c.setting = "expert"
-    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-    #     log.to_csv(f"experiments/swm1520-expert.csv", index=False)
-
-    # ===== SWM (1550) (Random Dataset) =====
+    # ===== WM (2434) vs SWM (1590) (Random Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
-        c.swm_agent_latent_dim = 5
-        c.setting = "random"
-        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/swm1550-random.csv", index=False)
+        log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/wm2434-swm1590-random.csv", index=False)
 
-    # ===== SWM (1550) (Spurious Dataset) =====
+    # ===== WM (2434) vs C-SWM (1590) (Spurious Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
-        c.swm_agent_latent_dim = 5
         c.setting = "spurious"
-        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/swm1550-spurious.csv", index=False)
+        log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/wm2434-swm1590-spurious.csv", index=False)
 
-    # ===== SWM (1550) (Expert Dataset) =====
+    # ===== WM (2434) vs C-SWM (1590) (Expert Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
-        c.swm_agent_latent_dim = 5
         c.setting = "expert"
-        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/swm1550-expert.csv", index=False)
+        log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/wm2434-swm1590-expert.csv", index=False)
 
-    # ===== SWM (2070) (Random Dataset) =====
+    # ===== SWM (2110) (Random Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
         c.swm_agent_latent_dim = 10
-        c.setting = "random"
-        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/swm2070-random.csv", index=False)
+        log = log.append(run_experiment(c, run_wm=False, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm2110-random.csv", index=False)
 
-    # ===== SWM (2070) (Spurious Dataset) =====
+    # ===== SWM (2110) (Spurious Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
-        c.swm_agent_latent_dim = 10
         c.setting = "spurious"
-        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/swm2070-spurious.csv", index=False)
+        c.swm_agent_latent_dim = 10
+        log = log.append(run_experiment(c, run_wm=False, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm2110-spurious.csv", index=False)
 
-    # ===== SWM (2070) (Expert Dataset) =====
+    # ===== SWM (2110) (Expert Dataset) =====
     log = pd.DataFrame()
     for i in tqdm(range(10)):
         c = define_config()
-        c.swm_agent_latent_dim = 10
         c.setting = "expert"
-        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/swm2070-expert.csv", index=False)
+        c.swm_agent_latent_dim = 10
+        log = log.append(run_experiment(c, run_wm=False, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm2110-expert.csv", index=False)
+
+    # ===== SWM (1850) (Random Dataset) =====
+    log = pd.DataFrame()
+    for i in tqdm(range(10)):
+        c = define_config()
+        c.swm_layers = 2
+        log = log.append(run_experiment(c, run_wm=False, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm1850-random.csv", index=False)
+
+    # ===== SWM (1850) (Spurious Dataset) =====
+    log = pd.DataFrame()
+    for i in tqdm(range(10)):
+        c = define_config()
+        c.setting = "spurious"
+        c.swm_layers = 2
+        log = log.append(run_experiment(c, run_wm=False, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm1850-spurious.csv", index=False)
+
+    # ===== SWM (1850) (Expert Dataset) =====
+    log = pd.DataFrame()
+    for i in tqdm(range(10)):
+        c = define_config()
+        c.setting = "expert"
+        c.swm_layers = 2
+        log = log.append(run_experiment(c, run_wm=False, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm1850-expert.csv", index=False)
