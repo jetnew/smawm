@@ -280,4 +280,4 @@ if __name__ == "__main__":
     # train_swm(setting="spurious", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
     # train_swm(setting="expert", agent_latent_dim=5, n_hidden=5, n_layers=0, epochs=1)
 
-    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)
+    train_swm(setting="random", agent_latent_dim=5, n_hidden=15, n_layers=1, epochs=1, count_params=True)

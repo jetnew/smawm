@@ -73,12 +73,12 @@ if __name__ == "__main__":
     #     log.to_csv(f"experiments/wm2264-swm1150-random.csv", index=False)
 
     # ===== WM (2264) vs SWM (1150) (Spurious Dataset) =====
-    log = pd.DataFrame()
-    for i in tqdm(range(10)):
-        c = define_config()
-        c.setting = "spurious"
-        log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
-        log.to_csv(f"experiments/wm2264-swm1150-spurious-0.05csv", index=False)
+    # log = pd.DataFrame()
+    # for i in tqdm(range(10)):
+    #     c = define_config()
+    #     c.setting = "spurious"
+    #     log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
+    #     log.to_csv(f"experiments/wm2264-swm1150-spurious.csv", index=False)
 
     # # ===== WM (2264) vs SWM (1150) (Expert Dataset) =====
     # log = pd.DataFrame()
@@ -87,3 +87,30 @@ if __name__ == "__main__":
     #     c.setting = "expert"
     #     log = log.append(run_experiment(c, run_wm=True, run_swm=True), ignore_index=True)
     #     log.to_csv(f"experiments/wm2264-swm1150-expert.csv", index=False)
+    #
+    # # ===== SWM (2090) (Random Dataset) =====
+    # log = pd.DataFrame()
+    # for i in tqdm(range(10)):
+    #     c = define_config()
+    #     c.swm_hidden = 15
+    #     c.setting = "random"
+    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
+    #     log.to_csv(f"experiments/swm2090-random.csv", index=False)
+    #
+    # # ===== SWM (2090) (Spurious Dataset) =====
+    # log = pd.DataFrame()
+    # for i in tqdm(range(10)):
+    #     c = define_config()
+    #     c.swm_hidden = 15
+    #     c.setting = "spurious"
+    #     log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
+    #     log.to_csv(f"experiments/swm2090-spurious.csv", index=False)
+
+    # ===== SWM (2090) (Expert Dataset) =====
+    log = pd.DataFrame()
+    for i in tqdm(range(10)):
+        c = define_config()
+        c.swm_hidden = 15
+        c.setting = "expert"
+        log = log.append(run_experiment(c, run_swm=True), ignore_index=True)
+        log.to_csv(f"experiments/swm2090-expert.csv", index=False)
