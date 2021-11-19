@@ -21,6 +21,12 @@ def to_one_hot(indices, max_index, action_dim=5):
     indices = indices.long() + torch.arange(0, max_index, action_dim, dtype=torch.long, device=indices.device)
     return zeros.scatter_(1, indices, 1)
 
+def to_one_hot2(indices, max_index):
+    zeros = torch.zeros(
+        indices.size()[0], max_index, dtype=torch.float32,
+        device=indices.device)
+    return zeros.scatter_(1, indices.unsqueeze(1), 1)
+
 
 def load_dict_h5py(fname):
     array_dict = dict()
@@ -91,6 +97,10 @@ class ContrastiveSWM(nn.Module):
             agent_latent_dim=agent_latent_dim,
             n_hidden=n_hidden,
             n_layers=n_layers)
+        self.decoder = DecoderMLP(
+            agent_latent_dim=agent_latent_dim,
+            n_hidden=n_hidden,
+            n_layers=n_layers)
     def energy(self, state, action, next_state, no_trans=False):
         norm = 0.5 / (self.sigma ** 2)
         if no_trans:
@@ -119,10 +129,11 @@ class ContrastiveSWM(nn.Module):
         state = self.obj_encoder(obs)
         rec = torch.sigmoid(self.decoder(state))
         loss = F.binary_cross_entropy(rec, obs, reduction='sum') / obs.size(0)
-        next_state_pred = state + model.transition_model(state, action)
-        next_rec = torch.sigmoid(decoder(next_state_pred))
+        next_state_pred = state + self.transition_model(state, action)
+        next_rec = torch.sigmoid(self.decoder(next_state_pred))
         next_loss = F.binary_cross_entropy(next_rec, next_obs, reduction='sum') / obs.size(0)
         loss += next_loss
+        return loss
 
     def forward(self, obs):
         return self.obj_encoder(obs)
@@ -243,7 +254,7 @@ class DecoderMLP(nn.Module):
         self.ln = nn.LayerNorm(n_hidden)
         self.act = nn.ReLU()
     def forward(self, x):
-        x = self.act(self.fc1(x))
+        x = self.act(self.fc1(x.view(-1, self.agent_latent_dim  *self.num_agents)))
         for layer in self.fcs:
             x = self.act(self.ln(layer(x)))
         return self.fc(x).view(-1, 10)
@@ -285,7 +296,8 @@ def train_swm(
         for batch_idx, data_batch in enumerate(train_loader):
             data_batch = [tensor.to(device) for tensor in data_batch]
             optimizer.zero_grad()
-            loss = model.contrastive_loss(*data_batch)
+            # loss = model.contrastive_loss(*data_batch)
+            loss = model.decoder_loss(*data_batch)
             loss.backward()
             train_loss += loss.item()
             optimizer.step()
@@ -309,4 +321,7 @@ if __name__ == "__main__":
 
     # train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1150
     # train_swm(setting="random", agent_latent_dim=5, n_hidden=15, n_layers=1, epochs=1, count_params=True)  # 2090
-    train_swm(setting="random", agent_latent_dim=10, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1520
+    # train_swm(setting="random", agent_latent_dim=10, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1520
+
+    train_swm(setting="random", agent_latent_dim=5, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 1550
+    train_swm(setting="random", agent_latent_dim=10, n_hidden=10, n_layers=1, epochs=1, count_params=True)  # 2070
