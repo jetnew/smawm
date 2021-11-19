@@ -115,6 +115,15 @@ class ContrastiveSWM(nn.Module):
                 state, action, neg_state, no_trans=True)).mean()
         loss = self.pos_loss + self.neg_loss
         return loss
+    def decoder_loss(self, obs, action, next_obs):
+        state = self.obj_encoder(obs)
+        rec = torch.sigmoid(self.decoder(state))
+        loss = F.binary_cross_entropy(rec, obs, reduction='sum') / obs.size(0)
+        next_state_pred = state + model.transition_model(state, action)
+        next_rec = torch.sigmoid(decoder(next_state_pred))
+        next_loss = F.binary_cross_entropy(next_rec, next_obs, reduction='sum') / obs.size(0)
+        loss += next_loss
+
     def forward(self, obs):
         return self.obj_encoder(obs)
 
@@ -220,6 +229,24 @@ class EncoderMLP(nn.Module):
         for layer in self.fcs:
             x = self.act(self.ln(layer(x)))
         return self.fc(x).view(-1, self.num_agents, self.agent_latent_dim)
+
+class DecoderMLP(nn.Module):
+    def __init__(self, agent_latent_dim, n_hidden, n_layers):
+        super(DecoderMLP, self).__init__()
+        self.agent_latent_dim = agent_latent_dim
+        self.num_agents = 3
+        self.fc1 = nn.Linear(agent_latent_dim * self.num_agents, n_hidden)
+        self.fcs = nn.ModuleList()
+        for _ in range(n_layers):
+            self.fcs.append(nn.Linear(n_hidden, n_hidden))
+        self.fc = nn.Linear(n_hidden, 10)
+        self.ln = nn.LayerNorm(n_hidden)
+        self.act = nn.ReLU()
+    def forward(self, x):
+        x = self.act(self.fc1(x))
+        for layer in self.fcs:
+            x = self.act(self.ln(layer(x)))
+        return self.fc(x).view(-1, 10)
 
 
 def train_swm(
