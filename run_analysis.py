@@ -77,13 +77,11 @@ def wm_prediction_loss(vae, mdrnn, obs, actions, device):
 def analyse_swm(
         setting,
         model_dir="models",
-        data_dir="datasets",
-        analysis_dir="analysis"
+        data_dir="datasets"
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
     data_dir = join(data_dir, setting, "predictions.h5")
-    csv_dir = join(analysis_dir, setting, "predictions-swm.csv")
     swm = torch.load(join(model_dir, setting, "swm.tar")).to(device)
     swm.eval()
 
@@ -99,20 +97,17 @@ def analyse_swm(
         losses += loss
     losses /= len(data_loader.dataset)
     print(f"SWM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
-    pd.DataFrame({"Loss": losses}).to_csv(csv_dir, index=False)
-    return
+    return {f"SWM Loss_t{t}": losses[t] for t in range(10)}
 
 
 def analyse_wm(
         setting,
         model_dir="models",
-        data_dir="datasets",
-        analysis_dir="analysis"
+        data_dir="datasets"
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
     data_dir = join(data_dir, setting, "predictions.h5")
-    csv_dir = join(analysis_dir, setting, "predictions-wm.csv")
     vae = torch.load(join(model_dir, setting, "vae.tar")).to(device)
     vae.eval()
     mdrnn = torch.load(join(model_dir, setting, "mdrnn.tar")).to(device)
@@ -130,15 +125,31 @@ def analyse_wm(
         losses += loss
     losses /= len(data_loader.dataset)
     print(f"WM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
-    pd.DataFrame({"Loss": losses}).to_csv(csv_dir, index=False)
-    return
-
+    return {f"WM Loss_t{t}": losses[t] for t in range(10)}
 
 if __name__ == "__main__":
     c = define_config()
-    analyse_swm(setting="random")
-    analyse_swm(setting="spurious")
-    analyse_swm(setting="expert")
-    analyse_wm(setting="random")
-    analyse_wm(setting="spurious")
-    analyse_wm(setting="expert")
+
+    wm_log = pd.DataFrame()
+    swm_log = pd.DataFrame()
+    for i in range(10):
+        generate_dataset(setting="random", generate_new=True)
+        swm_log = swm_log.append(analyse_swm(setting="random"), ignore_index=True)
+        wm_log = wm_log.append(analyse_wm(setting="random"), ignore_index=True)
+        wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-random.csv", index=False)
+
+    wm_log = pd.DataFrame()
+    swm_log = pd.DataFrame()
+    for i in range(10):
+        generate_dataset(setting="spurious", generate_new=True)
+        swm_log = swm_log.append(analyse_swm(setting="spurious"), ignore_index=True)
+        wm_log = wm_log.append(analyse_wm(setting="spurious"), ignore_index=True)
+        wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-spurious.csv", index=False)
+
+    wm_log = pd.DataFrame()
+    swm_log = pd.DataFrame()
+    for i in range(10):
+        generate_dataset(setting="expert", generate_new=True)
+        swm_log = swm_log.append(analyse_swm(setting="expert"), ignore_index=True)
+        wm_log = wm_log.append(analyse_wm(setting="expert"), ignore_index=True)
+        wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-expert.csv", index=False)

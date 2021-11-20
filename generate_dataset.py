@@ -26,6 +26,7 @@ def generate_dataset(
         episodes=1000,
         episode_length=100,
         agents=2,
+        generate_new=False,
         verbose=False):
     """
     Generates either the Random, Spurious or Expert dataset.
@@ -38,14 +39,14 @@ def generate_dataset(
         seed: int - Random seed
     """
     data_dir = join(getcwd(), data_dir, setting)
-    if exists(data_dir):
+    if exists(data_dir) and not generate_new:
         if verbose:
             print(f"Dataset {data_dir} exists.")
         return
-    else:
-        if verbose:
-            print(f"Generating dataset: {data_dir}")
+    elif not exists(data_dir):
         mkdir(data_dir)
+    if verbose:
+        print(f"Generating dataset: {data_dir}")
 
     if setting == "random":
         adversary = random_policy
@@ -64,8 +65,7 @@ def generate_dataset(
 
     env = simple_adversary_v2.parallel_env(N=agents, max_cycles=episode_length, continuous_actions=False)
 
-
-    for n in tqdm(range(episodes)):
+    for n in tqdm(range(episodes), disable=not verbose):
         obs = env.reset()
         s_rollout = []
         r_rollout = []
