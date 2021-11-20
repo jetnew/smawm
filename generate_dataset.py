@@ -115,7 +115,7 @@ def generate_dataset(
             for t in range(10):
                 prediction_buffer[n][f'obs_t{t}'].append(dataset['observations'][t])
                 prediction_buffer[n][f'action_t{t}'].append(dataset['actions'][t])
-            prediction_buffer[n]['obs_t10'].append(dataset['observations'][i + 10])
+            prediction_buffer[n]['obs_t10'].append(dataset['observations'][10])
     save_list_dict_h5py(prediction_buffer, join(data_dir, "predictions.h5"))
 
     env.close()

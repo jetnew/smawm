@@ -77,7 +77,8 @@ def wm_prediction_loss(vae, mdrnn, obs, actions, device):
 def analyse_swm(
         setting,
         model_dir="models",
-        data_dir="datasets"
+        data_dir="datasets",
+        verbose=False,
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
@@ -96,14 +97,16 @@ def analyse_swm(
         loss = swm_prediction_loss(swm, obs, actions)
         losses += loss
     losses /= len(data_loader.dataset)
-    print(f"SWM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
+    if verbose:
+        print(f"SWM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
     return {f"SWM Loss_t{t}": losses[t] for t in range(10)}
 
 
 def analyse_wm(
         setting,
         model_dir="models",
-        data_dir="datasets"
+        data_dir="datasets",
+        verbose=False,
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
@@ -124,7 +127,8 @@ def analyse_wm(
         loss = wm_prediction_loss(vae, mdrnn, obs, actions, device)
         losses += loss
     losses /= len(data_loader.dataset)
-    print(f"WM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
+    if verbose:
+        print(f"WM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
     return {f"WM Loss_t{t}": losses[t] for t in range(10)}
 
 if __name__ == "__main__":
@@ -132,7 +136,7 @@ if __name__ == "__main__":
 
     wm_log = pd.DataFrame()
     swm_log = pd.DataFrame()
-    for i in range(10):
+    for i in tqdm(range(10)):
         generate_dataset(setting="random", generate_new=True)
         swm_log = swm_log.append(analyse_swm(setting="random"), ignore_index=True)
         wm_log = wm_log.append(analyse_wm(setting="random"), ignore_index=True)
@@ -140,7 +144,7 @@ if __name__ == "__main__":
 
     wm_log = pd.DataFrame()
     swm_log = pd.DataFrame()
-    for i in range(10):
+    for i in tqdm(range(10)):
         generate_dataset(setting="spurious", generate_new=True)
         swm_log = swm_log.append(analyse_swm(setting="spurious"), ignore_index=True)
         wm_log = wm_log.append(analyse_wm(setting="spurious"), ignore_index=True)
@@ -148,7 +152,7 @@ if __name__ == "__main__":
 
     wm_log = pd.DataFrame()
     swm_log = pd.DataFrame()
-    for i in range(10):
+    for i in tqdm(range(10)):
         generate_dataset(setting="expert", generate_new=True)
         swm_log = swm_log.append(analyse_swm(setting="expert"), ignore_index=True)
         wm_log = wm_log.append(analyse_wm(setting="expert"), ignore_index=True)
