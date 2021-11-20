@@ -75,22 +75,23 @@ def wm_prediction_loss(vae, mdrnn, obs, actions, device):
 
 
 def analyse_swm(
-        setting,
+        model_setting,
+        analyse_setting,
         model_dir="models",
         data_dir="datasets",
         verbose=False,
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
-    data_dir = join(data_dir, "expert", "predictions.h5")
-    swm = torch.load(join(model_dir, setting, "swm.tar")).to(device)
+    data_dir = join(data_dir, analyse_setting, "predictions.h5")
+    swm = torch.load(join(model_dir, model_setting, "swm.tar")).to(device)
     swm.eval()
 
     dataset = AnalysePredictionsDataset(hdf5_file=data_dir)
     data_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
 
     losses = np.zeros(10)
-    for batch_idx, data_batch in enumerate(data_loader):
+    for batch_idx, data_batch in tqdm(enumerate(data_loader)):
         obs, actions = data_batch
         obs = [tensor.to(device) for tensor in obs]
         actions = [tensor.to(device) for tensor in actions]
@@ -98,29 +99,30 @@ def analyse_swm(
         losses += loss
     losses /= len(data_loader.dataset)
     if verbose:
-        print(f"SWM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
-    return {f"SWM Loss_t{t}": losses[t] for t in range(10)}
+        print(f"SWM Setting: '{model_setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
+    return {f"SWM Loss": losses}
 
 
 def analyse_wm(
-        setting,
+        model_setting,
+        analyse_setting,
         model_dir="models",
         data_dir="datasets",
         verbose=False,
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
-    data_dir = join(data_dir, "expert", "predictions.h5")
-    vae = torch.load(join(model_dir, setting, "vae.tar")).to(device)
+    data_dir = join(data_dir, analyse_setting, "predictions.h5")
+    vae = torch.load(join(model_dir, model_setting, "vae.tar")).to(device)
     vae.eval()
-    mdrnn = torch.load(join(model_dir, setting, "mdrnn.tar")).to(device)
+    mdrnn = torch.load(join(model_dir, model_setting, "mdrnn.tar")).to(device)
     mdrnn.eval()
 
     dataset = AnalysePredictionsDataset(hdf5_file=data_dir)
     data_loader = data.DataLoader(dataset, batch_size=32, shuffle=True)
 
     losses = np.zeros(10)
-    for batch_idx, data_batch in enumerate(data_loader):
+    for batch_idx, data_batch in tqdm(enumerate(data_loader)):
         obs, actions = data_batch
         obs = [tensor.to(device) for tensor in obs]
         actions = [tensor.to(device) for tensor in actions]
@@ -128,18 +130,28 @@ def analyse_wm(
         losses += loss
     losses /= len(data_loader.dataset)
     if verbose:
-        print(f"WM Setting: '{setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
-    return {f"WM Loss_t{t}": losses[t] for t in range(10)}
+        print(f"WM Setting: '{model_setting}'  1-Step: {losses[0]:.3f}  5-Step: {losses[5]:.3f}  10-Step: {losses[9]:.3f}")
+    return {f"WM Loss": losses}
 
 if __name__ == "__main__":
     c = define_config()
 
+    print("Generating random, spurious and expert datasets.")
+    generate_dataset(setting="random", generate_new=True)
+    generate_dataset(setting="spurious", generate_new=True)
     generate_dataset(setting="expert", generate_new=True)
 
-    wm_log = pd.DataFrame(analyse_wm(setting="random"))
-    swm_log = pd.DataFrame(analyse_swm(setting="random"))
-    wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-random-on-expert.csv", index=False)
+    print("Analysing world models trained on random and predicting on random.")
+    wm_log = pd.DataFrame(analyse_wm(model_setting="random", analyse_setting="random"))
+    swm_log = pd.DataFrame(analyse_swm(model_setting="random", analyse_setting="random"))
+    wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-random-on-random.csv", index=False)
 
-    wm_log = pd.DataFrame(analyse_wm(setting="spurious"))
-    swm_log = pd.DataFrame(analyse_swm(setting="spurious"))
-    wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-spurious-on-expert.csv", index=False)
+    print("Analysing world models trained on spurious and predicting on random.")
+    wm_log = pd.DataFrame(analyse_wm(model_setting="spurious", analyse_setting="random"))
+    swm_log = pd.DataFrame(analyse_swm(model_setting="spurious", analyse_setting="random"))
+    wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-spurious-on-random.csv", index=False)
+
+    print("Analysing world models trained on expert and predicting on random.")
+    wm_log = pd.DataFrame(analyse_wm(model_setting="expert", analyse_setting="random"))
+    swm_log = pd.DataFrame(analyse_swm(model_setting="expert", analyse_setting="random"))
+    wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-expert-on-random.csv", index=False)
