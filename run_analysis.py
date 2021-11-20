@@ -82,7 +82,7 @@ def analyse_swm(
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
-    data_dir = join(data_dir, setting, "predictions.h5")
+    data_dir = join(data_dir, "expert", "predictions.h5")
     swm = torch.load(join(model_dir, setting, "swm.tar")).to(device)
     swm.eval()
 
@@ -110,7 +110,7 @@ def analyse_wm(
 ):
     cuda = torch.cuda.is_available()
     device = torch.device('cuda' if cuda else 'cpu')
-    data_dir = join(data_dir, setting, "predictions.h5")
+    data_dir = join(data_dir, "expert", "predictions.h5")
     vae = torch.load(join(model_dir, setting, "vae.tar")).to(device)
     vae.eval()
     mdrnn = torch.load(join(model_dir, setting, "mdrnn.tar")).to(device)
@@ -134,26 +134,12 @@ def analyse_wm(
 if __name__ == "__main__":
     c = define_config()
 
-    wm_log = pd.DataFrame()
-    swm_log = pd.DataFrame()
-    for i in tqdm(range(10)):
-        generate_dataset(setting="random", generate_new=True)
-        swm_log = swm_log.append(analyse_swm(setting="random"), ignore_index=True)
-        wm_log = wm_log.append(analyse_wm(setting="random"), ignore_index=True)
-        wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-random.csv", index=False)
+    generate_dataset(setting="expert", generate_new=True)
 
-    wm_log = pd.DataFrame()
-    swm_log = pd.DataFrame()
-    for i in tqdm(range(10)):
-        generate_dataset(setting="spurious", generate_new=True)
-        swm_log = swm_log.append(analyse_swm(setting="spurious"), ignore_index=True)
-        wm_log = wm_log.append(analyse_wm(setting="spurious"), ignore_index=True)
-        wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-spurious.csv", index=False)
+    wm_log = pd.DataFrame(analyse_wm(setting="random"))
+    swm_log = pd.DataFrame(analyse_swm(setting="random"))
+    wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-random-on-expert.csv", index=False)
 
-    wm_log = pd.DataFrame()
-    swm_log = pd.DataFrame()
-    for i in tqdm(range(10)):
-        generate_dataset(setting="expert", generate_new=True)
-        swm_log = swm_log.append(analyse_swm(setting="expert"), ignore_index=True)
-        wm_log = wm_log.append(analyse_wm(setting="expert"), ignore_index=True)
-        wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-expert.csv", index=False)
+    wm_log = pd.DataFrame(analyse_wm(setting="spurious"))
+    swm_log = pd.DataFrame(analyse_swm(setting="spurious"))
+    wm_log.join(swm_log).to_csv("analysis/wm2434-swm1590-spurious-on-expert.csv", index=False)
