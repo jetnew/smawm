@@ -1,60 +1,26 @@
 # SMAWM
 
-In multi-agent reinforcement learning (MARL), the difficulty of generalising to diverse strategies and adapting to non-stationary behaviour remains a challenge. Inspired by model-based reinforcement learning (MBRL), we propose SMAWM or Structured Multi-Agent World Models, a world model that encompasses other agents in a compositional structure, to provide a strong inductive bias to novel interactions among multiple agents in the environment.
+Read the paper: [PDF](https://jetnew.io/assets/pdf/new2021structured.pdf)
 
-## Set-up
-```
-pip install -r requirements.txt
-```
-
-## Train WM
-```
-python mpe.py
-python vae.py
-python mdrnn.py
-python controller.py
-python wm.py
-```
-
-## Train SWM
-```
-python mpe_swm.py
-python swm.py
-python controller.py
-python wm.py
-```
+In multi-agent reinforcement learning, the difficulty of generalising to diverse interactions remains a challenge. Inspired by model-based reinforcement learning, we present Structured Multi-Agent World Models (SMAWM), a world model that encompasses other agents in a compositional structure, to provide a strong inductive bias for generalising to novel interactions among multiple agents in the environment. We show that reinforcement learning with the agent-factored state representation outperforms that with a purely connectionist world model despite using much fewer parameters. We further show that SMAWM learns an effective representation that is capable of much higher accuracy in forward prediction for planning, and propose future extensions that can likely scale SMAWM to environments of higher complexity.
 
 ## Project Breakdown
 
-### Dataset Generation
-- mpe.py - Generates MPE dataset.
-- mpe_spurious.py - Generates MPE dataset for the spurious context.
-- 
-### World Model
-- loaders.py - Utilities for loading data for WM.
-- vae.py - Trains the WM variational autoencoder.
-- mdrnn.py - Defines the WM mixture density recurrent neural network.
-- wm.py - Evaluates WM on the MPE environment.
-- controller.py - Trains the WM controller.
+* Generate datasets - `generate_dataset.py`
+* Train world model - `python train_wm.py`
+* Train SMAWM - `python train_swm.py`
+* Train RL agents - `python train_rl.py`
+* Run experiments - `python run_experiments.py`
+* Run analysis - `python run_analysis.py`
 
-### Structured World Model
-- learning.py - Utilities for SWM
-- swm.py - Defines the SWM.
-- swm_controller.py - Trains the SWM controller.
-- mpe_swm.py - Evaluates SWM on the MPE environment.
+## Results
 
-### Utilities
-- policies.py - Defines fixed policies for the environment.
+1. Performance of SMAWM exceeds World Models across all settings of interest.
+2. Performance of SMAWM does not change significantly as parameter count increases.
+3. SMAWM has higher prediction accuracy than World Models for very short time steps.
 
-### Miscellaneous
-- /datasets/mpe - Contains 1000 episodes of length 1000 each, collected from the MPE environment in .npz files.
-- /exp_dir
-  - /ctrl - Contains trained model of the WM controller.
-  - /mdrnn - Contains trained model of the WM mixture density recurrent neural network.
-  - /vae - Contains trained model of the WM variational autoencoder.
-- agents.py - NOT USED.
-- dev.py - Useless file for random testing/development.
-- misc.py - Utilities for ?
-- models.py - NOT USED?
-- requirements.txt - List of dependencies.
-- test.py - Useless file for random testing/development.
+## Future Extensions
+
+1. Opponent modeling to explicitly model joint action or joint policies of agents.
+2. Graph-VRNN to overcome environment stochasticity and partial observability.
+3. SMAWM as a model-based reinforcement learning method with online planning.
