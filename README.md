@@ -1,4 +1,4 @@
-# SMAWM
+# Structured Multi-Agent World Models
 
 **Read the paper: [PDF](https://jetnew.io/assets/pdf/new2021structured.pdf)**
 
