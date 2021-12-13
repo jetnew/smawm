@@ -1,6 +1,6 @@
 # Structured Multi-Agent World Models
 
-**Read the paper: [PDF](https://jetnew.io/assets/pdf/new2021structured.pdf)**
+**Winner of CS4246 Project Competition 2021. Read the paper: [PDF](https://jetnew.io/assets/pdf/new2021structured.pdf)**
 
 In multi-agent reinforcement learning, the difficulty of generalising to diverse interactions remains a challenge. Inspired by model-based reinforcement learning, we present Structured Multi-Agent World Models (SMAWM), a world model that encompasses other agents in a compositional structure, to provide a strong inductive bias for generalising to novel interactions among multiple agents in the environment. We show that reinforcement learning with the agent-factored state representation outperforms that with a purely connectionist world model despite using much fewer parameters. We further show that SMAWM learns an effective representation that is capable of much higher accuracy in forward prediction for planning, and propose future extensions that can likely scale SMAWM to environments of higher complexity.
 
